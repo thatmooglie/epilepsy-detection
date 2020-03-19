@@ -1,4 +1,4 @@
-Alt-epilepsy-detection
+Epilepsy Detection
 ====== 
 7 week project in Personal Portable Health Technologies.
 
