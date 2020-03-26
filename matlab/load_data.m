@@ -1,6 +1,6 @@
 clear all
 
-filename = "data\post-ictal-heart-rate-oscillations-in-partial-epilepsy-1.0.0\sz06.dat";
+filename = "data\post-ictal-heart-rate-oscillations-in-partial-epilepsy-1.0.0\sz01.dat";
 
 Fs = 200;
 ts = 1/200;
