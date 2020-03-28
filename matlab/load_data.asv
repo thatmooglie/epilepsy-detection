@@ -9,14 +9,10 @@ bpFilt = designfilt('bandpassfir','FilterOrder',64, ...
          'CutoffFrequency1',0.5,'CutoffFrequency2',40, ...
          'SampleRate',200);
 val = filter(bpFilt, val);
-start = 24500;
-WT = swt(val(start: start+2^10-1),4,'db1');
-c = corr(val(start: start+2^10-1)', WT');
+WT = swt(val(24500: 24500+2^20-1),5,'db1');
+c = corr(val(24500: 24500+2^20-1)', WT');
 
 x = abs(WT(3,:).*WT(4,:));
-subplot(211)
-plot(x)
-subplot(212)
-plot(val(start:start+2^10-1))
+
 
 %%[R_ind_post_processing,QRS_on_post_processing,QRS_off_post_processing,RR,ecg_out] = get_QRS(val,200,1);
