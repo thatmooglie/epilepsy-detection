@@ -1,6 +1,8 @@
 clear all
 close all
 load sz01m.mat
+get_QRS(val,200,1)
+%%
 bsFilt = designfilt('bandstopiir','FilterOrder',80, ...
          'HalfPowerFrequency1',59.9,'HalfPowerFrequency2',60.1, ...
          'SampleRate',200);
