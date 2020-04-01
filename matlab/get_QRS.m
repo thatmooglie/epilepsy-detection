@@ -33,8 +33,8 @@ end
 N = length(ecg); % New ECG length
 time = [0:1/fs:N/fs-1/fs]; %Time useful for plots
 ecg_out = ecg; % ECG after resize
-WT=swt(ecg,4,'db1'); %The wavelet transform is calculated
-WT_6 = WT(3,:).*WT(4,:); %The scale 6 is used
+WT=swt(ecg,4,'db3'); %The wavelet transform is calculated
+WT_6 = WT(4,:); %The scale 6 is used
 if gr % Plotting
     figure
     plot(time,ecg)
@@ -229,7 +229,7 @@ QRS_off_post_processing = [];
 i = 1; %Keeps track in the while loop
 
 RR_pre_processing = diff(R_ind); %RR intervals
-l = 10; %Set of RR intervals to consider
+l = 2; %Set of RR intervals to consider
 while i<= length(RR_pre_processing)
     %Selection of the RR intervals that are around the selected that has to
     %be analysed
