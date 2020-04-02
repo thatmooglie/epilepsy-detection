@@ -5,10 +5,9 @@ function [idxHRV, HRV, RR, idxR, HR] = getHRV(ecg, fs)
 %   Detailed explanation goes here
 fsHRV = 8;
 
-[idxR, ~, ~, RR, ~] = get_QRS(ecg, fsHRV, 0);
-HR = 60./(RR/200);
-idxHRV = idxR(1):1/8:(idxR(end-1))/200;
+[idxR, ~, ~, RR, ~] = get_QRS(ecg, fs, 0);
+idxHRV = idxR(1):1/fsHRV:(idxR(end-1))/200;
 HRV = interp1(idxR(1:end-1)/200,RR/200, idxHRV, 'extrap');
-HR = 60/RR;
+HR = 60./HRV;
 end
 
