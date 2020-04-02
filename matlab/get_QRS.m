@@ -25,26 +25,26 @@ RR = [];
 
 %--COMPUTATION OF THE SWT--------------------------------------------------
 N = length(ecg);
-if rem(N,2^6)~=0 %Signal length reduced to a power of 2
-    l=N-rem(N,2^6);
+if rem(N,2^4)~=0 %Signal length reduced to a power of 2
+    l=N-rem(N,2^4);
     ecg=ecg(1:l);
 end
 
 N = length(ecg); % New ECG length
 time = [0:1/fs:N/fs-1/fs]; %Time useful for plots
 ecg_out = ecg; % ECG after resize
-WT=swt(ecg,6,'db3'); %The wavelet transform is calculated
-WT_6 = WT(6,:); %The scale 6 is used
+WT=swt(ecg,4,'db3'); %The wavelet transform is calculated
+WT_6 = WT(4,:); %The scale 6 is used
 if gr % Plotting
     figure
     plot(time,ecg)
     hold on
     plot(time,WT_6);
     plot(time,zeros(1,length(time)))
-    title('ECG after denoising and 5th scale WT (db3)')
+    title('ECG after denoising and 5th scale WT (db1)')
     xlabel('Time [s]')
     ylabel('Amplitude [mV]')
-    legend('ECG','SWT 6th level','Zero level')
+    legend('ECG','SWT 3rd and 4th level','Zero level')
 end
 %--------------------------------------------------------------------------
 
@@ -229,7 +229,7 @@ QRS_off_post_processing = [];
 i = 1; %Keeps track in the while loop
 
 RR_pre_processing = diff(R_ind); %RR intervals
-l = 10; %Set of RR intervals to consider
+l = 2; %Set of RR intervals to consider
 while i<= length(RR_pre_processing)
     %Selection of the RR intervals that are around the selected that has to
     %be analysed
