@@ -13,15 +13,33 @@ function Tfeatures = TimeFeats(HRV,StartP,EndP)
 % output: 
 %        Tfeatures: time series features
 
-
+count = 0;
 for i = 1:length(StartP)
     data = HRV(StartP(i):EndP(i));
     Wmean(i) = mean(data);
     Wstd(i) = std(data);
+    Wrms(i) = rms(data);
+    Wactivity(i) = var(data);
+    Wmobility(i) = sqrt(var(diff(data))/var(data));
+    Wcomplexity(i) = Wmobility(diff(data))/Wmobility(data);
+    
+    for ii = 2:length(data)
+        
+        if abs(data(ii-1)-data(ii)) > 0.05
+         count = count + 1;
+        end
+    end
+    pNN50 = (count/length(data))*100;
 end
 
-Tfeatures.mean = Wmean';
-Tfeatures.std = Wstd';
+Tfeatures.Mean = Wmean';
+Tfeatures.Std = Wstd';
+Tfeatures.Rms = Wrms';
+Tfeatures.NN50 = count';
+Tfeatures.pNN50 = pNN50;
+Tfeatures.HjortPar.Activity = Wactivity';
+Tfeatures.HjortPar.Mobility = Wmobility';
+Tfeatures.HjortPar.Complexity = Wcomplexity';
 
 end
 
