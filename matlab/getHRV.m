@@ -7,7 +7,8 @@ fsHRV = 8;
 
 [idxR, ~, ~, RR, ~] = get_QRS(ecg, fs, 0);
 idxHRV = idxR(1)/200:1/fsHRV:(idxR(end-1))/200;
+idxHR = idxR(1)/200:(idxR(end-1))/200;
 HRV = interp1(idxR(1:end-1)/200,RR/200, idxHRV, 'linear', 'extrap');
-HR = 60./HRV;
+HR = 60./interp1(idxR(1:end-1)/200, RR/200, idxHR, 'linear', 'extrap');
 end
 
