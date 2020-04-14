@@ -1,12 +1,12 @@
 function FreqFeatures = Frequency_features(vq2,Fs)
 % vq2 er signalet i tidsdomainet
-% Fs er sampling freq. på signalet vq2.
-% HUSK at bandpower funktion skal måske laves omm hvis længden af signalet
+% Fs er sampling freq. pÃ¥ signalet vq2.
+% HUSK at bandpower funktion skal mÃ¥ske laves omm hvis lÃ¦ngden af signalet
 % er ulige. HUSK at tjekke det.
-% Den første figur er FFT spectrum af signal
+% Den fÃ¸rste figur er FFT spectrum af signal
 % Den anden figur er power spectrumet af signalet.
-% De grønne strege er skelelinerne mellem low, middel og upper limit. Det
-% kan ændre ved at ændre på variable navne: LowLimit, UpperLimit og Middel
+% De grÃ¸nne strege er skelelinerne mellem low, middel og upper limit. Det
+% kan Ã¦ndre ved at Ã¦ndre pÃ¥ variable navne: LowLimit, UpperLimit og Middel
 
 
 Y = fft(vq2);
@@ -33,7 +33,7 @@ ylabel('|A_{RR}(f)|')
 
 %w = 1000; % lenght of window
 %ov = 0.5; % procentage of overlapping
-[pxx,f]= pwelch(vq2,Fs);
+[pxx,f]= pwelch(vq2,[],[],[],Fs);
 
 figure
 plot(f,10*log10(pxx))
