@@ -6,12 +6,22 @@ function Tfeatures = TimeFeats(HRV,StartP,EndP)
 % in the main script.
 
 % input:
-%       HRV : heart rate variability
+%       HRV : heart rate variability in column vectors
 %       StartP: start point of each window (in vector form)
 %       EndP: End point of each window (in vector form)
 
 % output: 
 %        Tfeatures: time series features
+
+
+Wmean = [];
+Wstd = [];
+Wrms = [];
+Wactivity = [];
+Wmobility = [];
+Wcomplexity = [];
+
+pNN50 = [];
 
 count = 0;
 for i = 1:length(StartP)
@@ -21,7 +31,7 @@ for i = 1:length(StartP)
     Wrms(i) = rms(data);
     Wactivity(i) = var(data);
     Wmobility(i) = sqrt(var(diff(data))/var(data));
-    Wcomplexity(i) = Wmobility(diff(data))/Wmobility(data);
+    Wcomplexity(i) = (sqrt(var(diff(diff(data))))/var(diff(data)))/(sqrt(var(diff(data))/var(data)));
     
     for ii = 2:length(data)
         
