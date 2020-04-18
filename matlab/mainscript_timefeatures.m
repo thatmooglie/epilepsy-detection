@@ -20,9 +20,6 @@ FreqFeatures = Frequency_features(HRV,fs_hrv);
 
 %% visualization
 
-plot(TfeaturesNorm.Mean)
-
-
 
 
 
