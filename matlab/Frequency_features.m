@@ -1,12 +1,13 @@
 function FreqFeatures = Frequency_features(vq2,Fs)
-% vq2 er signalet i tidsdomainet
-% Fs er sampling freq. på signalet vq2.
-% HUSK at bandpower funktion skal måske laves omm hvis længden af signalet
-% er ulige. HUSK at tjekke det.
-% Den første figur er FFT spectrum af signal
-% Den anden figur er power spectrumet af signalet.
-% De grønne strege er skelelinerne mellem low, middel og upper limit. Det
-% kan ændre ved at ændre på variable navne: LowLimit, UpperLimit og Middel
+% function: FreqFeatures = Frequency_features(vq2,Fs,i)
+% calculate the frequency domain features in a signal.
+% -------- input ----------
+% [vector]  vq2     (signal in the time domian)
+% [int]     Fs      (sample freq.)
+% [int]     i       (do you want to see plots (yes = 1, no = 0))
+% -------- Outout --------
+% [vector] FreqFeatures     (vector with the first element as LF, then HF, total power, VLF, LFHF, LFnorm and the last element is HFnorm)
+
 
 
 Y = fft(vq2);
@@ -20,30 +21,32 @@ UpperLimit = 0.4;
 Middel = 0.15;
 
 f = Fs*(0:(L/2))/L;
-figure
-plot(f,P1) 
-xlim([0 0.5])
-hold on
-plot([LowLimit LowLimit],[0 0.1],'-g')
-plot([Middel Middel],[0 0.1],'-g')
-plot([UpperLimit UpperLimit],[0 0.1],'-g')
-title('Single-Sided Amplitude Spectrum of RR-signal')
-xlabel('f (Hz)')
-ylabel('|A_{RR}(f)|')
 
-%w = 1000; % lenght of window
-%ov = 0.5; % procentage of overlapping
-[pxx,f]= pwelch(vq2,[],[],[],Fs);
+[pxx,f2]= pwelch(vq2,[],[],[],Fs);
 
-figure
-plot(f,10*log10(pxx))
-xlim([0 0.5])
-hold on
-plot([LowLimit LowLimit],[-5 5],'-g')
-plot([Middel Middel],[-5 5],'-g')
-plot([UpperLimit UpperLimit],[-5 5],'-g')
-xlabel('Frequency (Hz)')
-ylabel('PSD (dB/Hz)')   
+if i ==1
+    figure
+    subplot(2,1,1)
+    plot(f,P1) 
+    %xlim([0 0.5])
+    hold on
+    plot([LowLimit LowLimit],[0 0.1],'-g')
+    plot([Middel Middel],[0 0.1],'-g')
+    plot([UpperLimit UpperLimit],[0 0.1],'-g')
+    title('Single-Sided Amplitude Spectrum of RR-signal')
+    xlabel('f (Hz)')
+    ylabel('|A_{RR}(f)|')
+
+    subplot(2,1,2)
+    plot(f2,10*log10(pxx))
+    %xlim([0 0.5])
+    hold on
+    plot([LowLimit LowLimit],[-5 5],'-g')
+    plot([Middel Middel],[-5 5],'-g')
+    plot([UpperLimit UpperLimit],[-5 5],'-g')
+    xlabel('Frequency (Hz)')
+    ylabel('PSD (dB/Hz)')   
+end 
 
 LF = sum(pxx(find(abs(f2-LowLimit) < 0.002):find(abs(f2-Middel) < 0.002)));
 HF = sum(pxx(find(abs(f2-Middel) < 0.002):find(abs(f2-UpperLimit) < 0.002)));
