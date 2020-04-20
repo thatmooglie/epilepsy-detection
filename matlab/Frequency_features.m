@@ -45,10 +45,10 @@ plot([UpperLimit UpperLimit],[-5 5],'-g')
 xlabel('Frequency (Hz)')
 ylabel('PSD (dB/Hz)')   
 
-LF = bandpower(vq2,Fs,[LowLimit Middel]);
-HF = bandpower(vq2,Fs,[Middel UpperLimit]);
-tot_p = bandpower(vq2,Fs,[0 UpperLimit]);
-VLF = bandpower(vq2,Fs,[0 LowLimit]);
+LF = sum(pxx(find(abs(f2-LowLimit) < 0.002):find(abs(f2-Middel) < 0.002)));
+HF = sum(pxx(find(abs(f2-Middel) < 0.002):find(abs(f2-UpperLimit) < 0.002)));
+tot_p = sum(pxx(1:find(abs(f2-UpperLimit) < 0.002)));
+VLF = sum(pxx(1:find(abs(f2-LowLimit) < 0.002)));
 
 LFHF = LF/HF;
 LFnorm = LF/(tot_p * 100);
