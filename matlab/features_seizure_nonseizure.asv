@@ -542,11 +542,12 @@ pt4nSafter = zeros(length(Tfeaturesafter4.Mean),1)';
 pt4 = [pt4nSbefore pt4S pt4nSafter]; 
 
 % patient 5
-pt5nSbefore = zeros(length(Tfeaturesbefore5.Mean),1)';
-pt5S = ones(length(Tfeaturesunder5.Mean),1)';
-pt5nSafter = zeros(length(Tfeaturesafter5.Mean),1)';
+pt5nSbefore = zeros(length(Tfeaturesbefore1.Mean),1)';
+pt5S = ones(length(Tfeaturesunder1.Mean),1)';
+pt5nSafter = zeros(length(Tfeaturesafter1.Mean),1)';
 
-pt5 = [pt5nSbefore pt5S pt5nSafter]; 
+pt5 = [pt5nSbefore pt1S pt1nSafter]; 
+
 
 % patient 6
 pt6nSbefore1 = zeros(length(Tfeaturesbefore61.Mean),1)';
@@ -560,17 +561,12 @@ pt6nSafter2 = zeros(length(Tfeaturesafter62.Mean),1)';
 pt6 = [pt6nSbefore1 pt6S1 pt6nSafter1 pt6nSbefore2 pt6S2 pt6nSafter2]; 
 
 % patient 7
-pt7nSbefore = zeros(length(Tfeaturesbefore7.Mean),1)';
-pt7S = ones(length(Tfeaturesunder7.Mean),1)';
-pt7nSafter = zeros(length(Tfeaturesafter7.Mean),1)';
 
-pt7 = [pt7nSbefore pt7S pt7nSafter]; 
 
-% collected:
-ptsSnS = [pt1 pt2 pt3 pt4 pt5 pt6 pt7]';
 
-% features collected
-totalFeatsmat = [Tmean,Tstd,TRMS,Tac,Tm,Tc,ptsSnS];
+
+
+
 
 
 

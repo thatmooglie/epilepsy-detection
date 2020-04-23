@@ -1,4 +1,4 @@
-function [Tfeatures,TfeaturesNorm] = TimeFeats(HRV,StartP,EndP)
+function [Tfeatures] = TimeFeats(HRV,StartP,EndP)
 
 % Tfeatures = TimeFeats(HRV,StartP,EndP)calculates the time features of
 % each window
@@ -50,15 +50,6 @@ Tfeatures.pNN50 = pNN50;
 Tfeatures.HjortPar.Activity = Wactivity';
 Tfeatures.HjortPar.Mobility = Wmobility';
 Tfeatures.HjortPar.Complexity = Wcomplexity';
-
-for j = 1:length(Tfeatures.Mean)
-    TfeaturesNorm.Mean(j) =  (Tfeatures.Mean(j)- min(Tfeatures.Mean))/(max(Tfeatures.Mean)- min(Tfeatures.Mean));
-    TfeaturesNorm.Std(j) =  (Tfeatures.Std(j)- min(Tfeatures.Std))/(max(Tfeatures.Std)- min(Tfeatures.Std));
-    TfeaturesNorm.Rms(j) =  (Tfeatures.Rms(j)- min(Tfeatures.Rms))/(max(Tfeatures.Rms)- min(Tfeatures.Rms));
-    TfeaturesNorm.HjortPar.Activity(j) =  (Tfeatures.HjortPar.Activity(j)- min(Tfeatures.HjortPar.Activity))/(max(Tfeatures.HjortPar.Activity)- min(Tfeatures.HjortPar.Activity));
-    TfeaturesNorm.HjortPar.Mobility(j) =  (Tfeatures.HjortPar.Mobility(j)- min(Tfeatures.HjortPar.Mobility))/(max(Tfeatures.HjortPar.Mobility)- min(Tfeatures.HjortPar.Mobility));
-    TfeaturesNorm.HjortPar.Complexity(j) =  (Tfeatures.HjortPar.Complexity(j)- min(Tfeatures.HjortPar.Complexity))/(max(Tfeatures.HjortPar.Complexity)- min(Tfeatures.HjortPar.Complexity));    
-end
 
 end
 
