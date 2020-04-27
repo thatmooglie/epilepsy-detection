@@ -35,6 +35,10 @@ time = [0:1/fs:N/fs-1/fs]; %Time useful for plots
 ecg_out = ecg; % ECG after resize
 WT=swt(ecg,4,'db3'); %The wavelet transform is calculated
 WT_6 = WT(4,:); %The scale 6 is used
+% [c,l] = wavedec(ecg,4,'db3');
+% D = detcoef(c,l,'db3');
+% WT_6 = D{4};
+
 if gr % Plotting
     figure
     plot(time,ecg)
