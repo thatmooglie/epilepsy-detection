@@ -3,6 +3,10 @@ package com.example.epilepsydetector;
 import android.view.animation.LinearInterpolator;
 
 import java.util.List;
+import org.apache.commons.math3.stat.StatUtils;
+import org.apache.commons.math3.util.MathArrays;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.math3.transform.FastFourierTransformer;
 import java.util.stream.IntStream;
 
 import org.apache.commons.math3.stat.StatUtils;
@@ -84,6 +88,132 @@ public class FeatureExtractor {
 
         FeatureExtractor featExt = new FeatureExtractor(ecg);
         featExt.getFeatureValues() -> double[];
+
+    }
+	
+	 public static double mean(double[] hrvsig) {
+        double sum = 0;
+        for (int i = 0; i < hrvsig.length; i++) {
+            sum += hrvsig[i];
+        }
+        double Mean = sum / hrvsig.length;
+        return Mean;
+    }
+
+    public static double std(double[] hrvsig)
+    {
+        int sum = 0;
+        int max = 0;
+        int min = 0;
+        double sd = 0;
+        for(int i=0; i<hrvsig.length; i++)
+        {
+            sum = sum + hrvsig[i];
+        }
+        double average = sum / hrvsig.length;
+        for(int i=0; i<hrvsig.length; i++)
+        {
+            if(hrvsig[i] > max)
+            {
+                max = hrvsig[i];
+            }
+        }
+        for(int i=0; i<hrvsig.length; i++)
+        {
+            if(hrvsig[i] < min)
+            {
+                min = hrvsig[i];
+            }
+        }
+        for (int i=0; i<hrvsig.length;i++) {
+            for(int i = 0; i < hrvsig.length; i++)
+            {
+                sd += Math.pow((hrvsig[i] - average),2) / hrvsig.length;
+            }
+            double standardDeviation = Math.sqrt(sd);
+
+        }
+        return standardDeviation;
+    }
+
+    public static double rms(double[] hrvsig) {
+        int sum = 0;
+
+        for(int i=0; i<hrvsig.length; i++) {
+            sum = sum + Math.pow(hrvsig[i],2);
+        }
+
+        double RootMeanSquare = Math.sqrt(sum)/hrvsig.length;
+        return RootMeanSquare;
+    }
+
+    public static double nn50(double[] hrvsig){
+        int counter = 0;
+
+        for(int i=0; i<hrvsig.length; i++) {
+            if(Math.abs(hrvsig[i-1]-hrvsig[i]) > 0.05){
+                counter = counter + 1;
+            }
+        }
+
+        double NN50 = counter;
+        double pNN50 = (counter/hrvsig.length)*100;
+
+        return NN50;
+        return pNN50;
+    }
+}
+
+    public static double activity(double[] hrvsig){
+        ac = StatUtils.variance(hrvsig);
+        return ac;
+    }
+
+    public double diff(double[] hrvsig){
+        j = 0;
+
+        for(i = 0; i < hrvsig.length; i++) {
+            y[j] = (hrvsig[i] - hrvsig[i - 1]);
+            j++;
+        }
+    }
+
+    public static double mobility(double[] hrvsig){
+
+        double diffsig = diff(hrvsig);
+
+
+
+        double mob = Math.sqrt(StatUtils.variance(diffsig))/StatUtils.variance(hrvsig);
+        return mob;
+    }
+
+    public static double complexity(double[] hrvsig){
+        double diffsig = diff(hrvsig);
+        double diffdiffsig = diff(diffsig);
+
+        double com = (Math.sqrt(StatUtils.variance(diffdiffsig))/StatUtils.variance(diffsig))/(Math.sqrt(StatUtils.variance(diffsig)/StatUtils.variance(hrvsig)));
+
+        return com;
+    }
+
+    string name1 = "Mean";
+    string name2 = "Standard deviation";
+    string name3 = 'Root mean square';
+    string name4 = 'NN50';
+    string name5 = 'pNN50';
+    string name6 = 'Activity';
+    string name7 = 'Mobility';
+    string name8 = 'Complexity';
+
+    this.addfeature(new feature(name1,Mean));
+    this.addfeature(new feature(name2,standardDeviation));
+    this.addfeature(new feature(name3,RootMeanSquare));
+    this.addfeature(new feature(name4,NN50));
+    this.addfeature(new feature(name5,pNN50));
+    this.addfeature(new feature(name6,ac));
+    this.addfeature(new feature(name7,mob));
+    this.addfeature(new feature(name8,com));
 
     }
 
