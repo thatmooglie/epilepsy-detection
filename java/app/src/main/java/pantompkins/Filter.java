@@ -71,7 +71,7 @@ public class Filter extends QRSDetector{
         int fs = 200;
         double[] maH = new double[(int) Math.round(0.150* fs)];
         for (int i = 0; i<(int)Math.round(0.150* fs); i++) {
-            maH[i] = 1/(0.150*fs);
+            maH[i] = 1/(0.150d*fs);
         }
         double[] result = MathArrays.convolve(ecg, maH);
         return result;

@@ -2,22 +2,22 @@ package com.example.epilepsydetector;
 
 public class Feature {
     protected String name;
-    protected float value;
+    protected double value;
 
     public Feature(){
 
     }
-    public Feature(String name, float value){
+    public Feature(String name, double value){
         this.name = name;
         this.value = value;
     }
 
 
-    public float getValue(){
+    public double getValue(){
         return value;
     }
 
-    public void setValue(float value){
+    public void setValue(double value){
         this.value = value;
     }
 
