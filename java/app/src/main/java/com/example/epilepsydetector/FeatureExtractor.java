@@ -90,41 +90,43 @@ public class FeatureExtractor {
         featExt.getFeatureValues() -> double[];
 
     }
-	
+
 	 public static double mean(double[] hrvsig) {
-        double sum = 0;
-        for (int i = 0; i < hrvsig.length; i++) {
-            sum += hrvsig[i];
-        }
-        double Mean = sum / hrvsig.length;
+        //double sum = 0;
+        //for (int i = 0; i < hrvsig.length; i++) {
+          //  sum += hrvsig[i];
+        //}
+        //double Mean = sum / hrvsig.length;
+         double Mean = StatUtils.mean(hrvsig);
         return Mean;
     }
 
     public static double std(double[] hrvsig)
     {
         int sum = 0;
-        int max = 0;
-        int min = 0;
+        //int max = 0;
+        //int min = 0;
         double sd = 0;
         for(int i=0; i<hrvsig.length; i++)
         {
             sum = sum + hrvsig[i];
         }
         double average = sum / hrvsig.length;
-        for(int i=0; i<hrvsig.length; i++)
-        {
-            if(hrvsig[i] > max)
-            {
-                max = hrvsig[i];
-            }
-        }
-        for(int i=0; i<hrvsig.length; i++)
-        {
-            if(hrvsig[i] < min)
-            {
-                min = hrvsig[i];
-            }
-        }
+
+        //for(int i=0; i<hrvsig.length; i++)
+        //{
+          //  if(hrvsig[i] > max)
+            //{
+            //    max = hrvsig[i];
+           // }
+        //}
+       // for(int i=0; i<hrvsig.length; i++)
+        //{
+          //  if(hrvsig[i] < min)
+           // {
+             //   min = hrvsig[i];
+           // }
+        //}
         for (int i=0; i<hrvsig.length;i++) {
             for(int i = 0; i < hrvsig.length; i++)
             {
@@ -182,8 +184,6 @@ public class FeatureExtractor {
 
         double diffsig = diff(hrvsig);
 
-
-
         double mob = Math.sqrt(StatUtils.variance(diffsig))/StatUtils.variance(hrvsig);
         return mob;
     }
@@ -199,12 +199,12 @@ public class FeatureExtractor {
 
     string name1 = "Mean";
     string name2 = "Standard deviation";
-    string name3 = 'Root mean square';
-    string name4 = 'NN50';
-    string name5 = 'pNN50';
-    string name6 = 'Activity';
-    string name7 = 'Mobility';
-    string name8 = 'Complexity';
+    string name3 = "Root mean square";
+    string name4 = "NN50";
+    string name5 = "pNN50";
+    string name6 = "Activity";
+    string name7 = "Mobility";
+    string name8 = "Complexity";
 
     this.addfeature(new feature(name1,Mean));
     this.addfeature(new feature(name2,standardDeviation));
