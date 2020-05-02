@@ -44,7 +44,7 @@ public class Classifier {
         {
             if (val[i]== 0) {
                 freq1 += (1/Math.pow(dis[i],2));
-            }else {
+            }else{
                 if (val[i] == 1) {
                     freq2 += (1/Math.pow(dis[i],2));}
             }
