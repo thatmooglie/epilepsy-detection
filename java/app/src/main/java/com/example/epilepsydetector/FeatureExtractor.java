@@ -17,6 +17,8 @@ public class FeatureExtractor {
     private List<Feature> features;
     private double[] ecg;
     private double [] featureValues;
+    private double[] meanvec;
+    private double[] stdvec;
 
 
     public FeatureExtractor(double[] ecg){
@@ -24,10 +26,17 @@ public class FeatureExtractor {
     }
 
     public FeatureExtractor(){
+
     }
 
     public double[] extract(){
 
+        public double normalize(features){
+            for(i=0;i<features.size;i++){
+                double normfeatures[i] = (features[i]-meanvec)/stdvec;
+            }
+           return normfeatures;
+        }
     }
 
     public void setFeatures(List<Feature> features){
