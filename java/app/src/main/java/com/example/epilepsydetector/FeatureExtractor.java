@@ -34,7 +34,9 @@ public class FeatureExtractor {
         public double normalize(double[] features){
             double[] normfeatures = new double[features.length];
             for(i=0;i<features.size;i++){
-                double normfeatures[i] = (features[i]-meanvec)/stdvec;
+                for(n=0,n<meanvec.size;n++) {
+                    double normfeatures[i] =(features[i] - meanvec[n]) / stdvec[n];
+                }
             }
            return normfeatures;
         }
