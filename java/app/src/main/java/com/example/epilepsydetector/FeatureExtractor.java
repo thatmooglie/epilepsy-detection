@@ -30,7 +30,19 @@ public class FeatureExtractor {
     }
 
     public double[] extract(){
+	 double[] feature = new double[5];
 
+        if (Linearphasedetect(ecg,1) == 0) {
+            return feature;
+        }else{
+            feature[2] = Linearphasedetect(ecg,1);
+            feature[3] = Linearphasedetect(ecg,2);
+            feature[4] = Linearphasedetect(ecg,3);
+            feature[0] = calculate_Mobi();	// name of the function that calculates the mobility
+            feature[1] = calculate_PNN50();	// name of the function that calculates the pNN50
+            return feature;
+        }
+	// maybe this function should be outside the extract function (I don't know, but if not when maybe the text over this should be move to another function)
         public double normalize(double[] features){
             double[] normfeatures = new double[features.length];
             for(i=0;i<features.size;i++){
@@ -160,7 +172,67 @@ public class FeatureExtractor {
         double RootMeanSquare = Math.sqrt(sum)/hrvsig.length;
         return RootMeanSquare;
     }
+	
+public double Linearphasedetect(double[] ecg, int flag){
+        int max_i = 0;
+        int min_i = 0;
+        double max = ecg[0];
+        double min = ecg[1];
+        // this findes the max and min value
+        for(int i = 1; i < ecg.length; i++){
+            if(ecg[i] > max) {
+                max = ecg[i];
+                max_i = i;
+            } if(ecg[i] < min){
+                min = ecg[i];
+                min_i = i;
+            }
+        }
+        //calculating the length
+        int lenght = max_i -min_i;
+        // calculating the slope
+        double slope;
+        if(max_i > min_i){
+            slope = (max-min)/(max_i-min_i);
+        }else{
+            slope = 0;
+        }
+        if(slope > 1.1 && lenght > 12 && max > 80 && (max-ecg[1])> 15){
+            if (endpoint > 0){
+                if((ecg[1]-endpoint)> 150){
 
+                    if (flag ==1){
+                        return max;
+                    }else if (flag == 2){
+                        return lenght;
+                    }else if (flag == 3){
+                        double sum =0;
+                        for(int i = 0; i<ecg.length;i++){
+                            sum = sum + ecg[i];
+                        }
+                        return (sum/ecg.length);
+                    }else{
+                        return 0;
+                    }
+                }
+            }else{
+                endpoint = ecg[ecg.length-1];
+                if (flag ==1){
+                    return max;
+                }else if (flag == 2){
+                    return lenght;
+                }else if (flag == 3){
+                    double sum =0;
+                    for(int i = 0; i<ecg.length;i++){
+                        sum = sum + ecg[i];
+                    }
+                    return (sum/ecg.length);
+                }else{
+                    return 0;
+                }
+            }
+        }else return 0;
+    }
     public static double nn50(double[] hrvsig){
         int counter = 0;
 
