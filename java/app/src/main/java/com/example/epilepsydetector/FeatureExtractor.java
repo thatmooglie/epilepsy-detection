@@ -24,30 +24,28 @@ public class FeatureExtractor {
     public FeatureExtractor(){
 
     }
-    public double[] extract(){
-	 double[] feature = new double[5];
+    public double[] extract() {
+        double[] feature = new double[5];
 
-        if (Linearphasedetect(ecg,1) == 0) {
+        if (Linearphasedetect(ecg, 1) == 0) {
             return feature;
-        }else{
-            feature[2] = Linearphasedetect(ecg,1);
-            feature[3] = Linearphasedetect(ecg,2);
-            feature[4] = Linearphasedetect(ecg,3);
-            feature[0] = calculate_Mobi();	// name of the function that calculates the mobility
-            feature[1] = calculate_PNN50();	// name of the function that calculates the pNN50
+        } else {
+            feature[2] = Linearphasedetect(ecg, 1);
+            feature[3] = Linearphasedetect(ecg, 2);
+            feature[4] = Linearphasedetect(ecg, 3);
+            feature[0] = getMobility();    // name of the function that calculates the mobility
+            feature[1] = getPNN50();    // name of the function that calculates the pNN50
             return feature;
         }
+    }
 	// maybe this function should be outside the extract function (I don't know, but if not when maybe the text over this should be move to another function)
-        public double normalize(double[] features){
+        public double[] normalize(double[] features){
             double[] normfeatures = new double[features.length];
-            for(i=0;i<features.size;i++){
-                for(n=0,n<meanvec.size;n++) {
-                    double normfeatures[i] =(features[i] - meanvec[n]) / stdvec[n];
-                }
+            for(int i=0;i<features.length;i++){
+                normfeatures[i] = (features[i] - meanvec[i]) / stdvec[i];
             }
            return normfeatures;
         }
-    }
 
     public void setFeatures(List<Feature> features){
         this.features = features;
@@ -178,7 +176,7 @@ public double Linearphasedetect(double[] ecg, int flag){
             }
         }else return 0;
     }
-    public static double nn50(double[] hrvsig){
+    public static double getPNN50(double[] hrvsig){
         int counter = 0;
 
         for(int i=0; i<hrvsig.length; i++) {
@@ -186,15 +184,11 @@ public double Linearphasedetect(double[] ecg, int flag){
                 counter = counter + 1;
             }
         }
-
-        double NN50 = counter;
-        //double pNN50 = (counter/hrvsig.length)*100;
-
-        return NN50;
-        //return pNN50;
+        double pNN50 = (counter/hrvsig.length)*100;
+        return pNN50;
     }
 
-    public static double activity(double[] hrvsig){
+    public static double getActivity(double[] hrvsig){
         double ac = StatUtils.variance(hrvsig);
         return ac;
     }
@@ -207,7 +201,7 @@ public double Linearphasedetect(double[] ecg, int flag){
         return y;
     }
 
-    public static double mobility(double[] hrvsig){
+    public static double getMobility(double[] hrvsig){
         double[] diffsig = diff(hrvsig);
 
         double mob = Math.sqrt(StatUtils.variance(diffsig))/StatUtils.variance(hrvsig);
