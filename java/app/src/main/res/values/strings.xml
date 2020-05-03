@@ -1,3 +1,5 @@
 <resources>
-    <string name="app_name">EpilepsyDetector</string>
+    <string name="app_name">Seizure The Day</string>
+    <string name="heart_rate">Heart Rate:</string>
+    <string name="bpm">BPM</string>
 </resources>

@@ -3,7 +3,7 @@ import java.lang.Math;
 import java.util.Arrays;
 
 public class Classifier {
-    private double [] featureValues = feature;
+    private double [] featureValues;
     // Classifier
     public int weightedkNN(){
 

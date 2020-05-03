@@ -1,14 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
     xmlns:android = "http://schemas.android.com/apk/res/android"
     xmlns:app = "http://schemas.android.com/apk/res-auto"
     xmlns:tools = "http://schemas.android.com/tools"
     android:layout_width = "match_parent"
     android:orientation = "vertical"
     android:layout_height = "match_parent"
-    tools:context = ".MainActivity" >
+    tools:context = ".MainActivity"
+    android:background="@color/colorPrimary">
+
     <com.jjoe64.graphview.GraphView
-        android:layout_width = "match_parent"
-        android:layout_height = "match_parent"
-        android:id = "@+id/graph" />
-</LinearLayout>
+        android:id="@+id/graph"
+        android:layout_width="match_parent"
+        android:layout_height="175dp"
+        android:layout_marginTop="25dp"/>
+
+    <TextView
+        android:paddingTop="50dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/heart_rate"
+        android:textColor="@color/colorAccent"
+        android:layout_below="@+id/graph"
+        android:id="@+id/heartratetext"
+        android:paddingLeft="25dp"/>
+
+    <TextView
+        android:paddingTop="50dp"
+        android:paddingStart="25dp"
+        android:layout_toEndOf="@id/heartratetext"
+        android:layout_below="@id/graph"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="number"
+        android:textColor="@color/colorAccent"
+        android:id="@+id/heartrate"
+        tools:ignore="RtlSymmetry,TextViewEdits" />
+    <TextView
+        android:paddingTop="50dp"
+        android:paddingStart="25dp"
+        android:layout_toEndOf="@id/heartratetext"
+        android:layout_below="@id/graph"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textColor="@color/colorAccent"
+        tools:ignore="RtlSymmetry" />
+
+</RelativeLayout>

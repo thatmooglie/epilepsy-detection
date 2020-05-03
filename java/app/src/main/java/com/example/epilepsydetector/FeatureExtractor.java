@@ -1,17 +1,13 @@
 package com.example.epilepsydetector;
 
-import android.view.animation.LinearInterpolator;
 
 import java.util.List;
+
+import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 import org.apache.commons.math3.stat.StatUtils;
-import org.apache.commons.math3.util.MathArrays;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.math3.transform.FastFourierTransformer;
+
 import java.util.stream.IntStream;
-
-import org.apache.commons.math3.stat.StatUtils;
-
-import pantompkins.QRSDetector;
+import org.apache.commons.math3.analysis.interpolation.LinearInterpolator;
 
 public class FeatureExtractor {
     private List<Feature> features;
@@ -24,10 +20,6 @@ public class FeatureExtractor {
     }
 
     public FeatureExtractor(){
-    }
-
-    public double[] extract(){
-
     }
 
     public void setFeatures(List<Feature> features){
@@ -58,93 +50,45 @@ public class FeatureExtractor {
         this.features.add(feature);
     }
 
-    private double[] extractHR(double[] hrvSignal){
-
-        double[] hrSig = new double[0];
-
+    public double[] extractHR(double[] hrvSignal){
+        double[] hrSig = new double[Math.floorDiv(hrvSignal.length, 8)];
+        for(int i=0; i<hrvSignal.length/8; i++){
+            hrSig[i] = 60/(hrvSignal[i*8]/200);
+        }
         return hrSig;
     }
 
-    private double[] extractHRV(int[] rrSignal){
+    public double[] extractHRV(int[] rSignal){
 
-        double[] rrInterval = new double[rrSignal.length-1];
-        for (int i=0; i<rrSignal.length-2; i++){
-            rrInterval[i] = rrSignal[i+1]-rrSignal[i];
+        double[] rrInterval = new double[rSignal.length-1];
+        int[] rrIndices = new int[rSignal.length-1];
+        double[] rrDIndices = new double[rSignal.length-1];
+        for (int i=0; i<rSignal.length-1; i++){
+            rrInterval[i] = rSignal[i+1]-rSignal[i];
+            rrIndices[i] = rSignal[i];
+            rrDIndices[i] = rSignal[i];
         }
-        int [] newX = IntStream.range(rrSignal[0], rrSignal[rrSignal.length-1]/25).map(i -> i*3).toArray();
+        int [] newX = IntStream.range(rrIndices[0], rrIndices[rrIndices.length-1]).filter(i -> i%25==0).toArray();
         LinearInterpolator linIntp = new LinearInterpolator();
-        double[] hrvSig = new double[0];
+        PolynomialSplineFunction rr = linIntp.interpolate(rrDIndices, rrInterval);
+        double[] hrvSig = new double[newX.length];
+        for (int i = 0; i<newX.length; i++) {
+            hrvSig[i] = rr.value(newX[i]);
+        }
         return hrvSig;
     }
+
     // Add extraction functions here
-
-    public void getAllFeature(){
-        double value = 42;
-        String name = "LinearPhaseFeature";
-        Feature linPhase = new Feature(name, (float) value);
-        this.addFeature(linPhase);
-
-        this.feature - > List<feature>;
-
-        FeatureExtractor featExt = new FeatureExtractor(ecg);
-        featExt.getFeatureValues() -> double[];
-
-    }
-	
-	 public static double mean(double[] hrvsig) {
-        double sum = 0;
-        for (int i = 0; i < hrvsig.length; i++) {
-            sum += hrvsig[i];
-        }
-        double Mean = sum / hrvsig.length;
-        return Mean;
+    public double getMean(double[] signal) {
+        return StatUtils.mean(signal);
     }
 
-    public static double std(double[] hrvsig)
-    {
-        int sum = 0;
-        int max = 0;
-        int min = 0;
-        double sd = 0;
-        for(int i=0; i<hrvsig.length; i++)
-        {
-            sum = sum + hrvsig[i];
-        }
-        double average = sum / hrvsig.length;
-        for(int i=0; i<hrvsig.length; i++)
-        {
-            if(hrvsig[i] > max)
-            {
-                max = hrvsig[i];
-            }
-        }
-        for(int i=0; i<hrvsig.length; i++)
-        {
-            if(hrvsig[i] < min)
-            {
-                min = hrvsig[i];
-            }
-        }
-        for (int i=0; i<hrvsig.length;i++) {
-            for(int i = 0; i < hrvsig.length; i++)
-            {
-                sd += Math.pow((hrvsig[i] - average),2) / hrvsig.length;
-            }
-            double standardDeviation = Math.sqrt(sd);
-
-        }
-        return standardDeviation;
+    public static double std(double[] signal) {
+        return Math.sqrt(StatUtils.variance(signal));
     }
 
-    public static double rms(double[] hrvsig) {
-        int sum = 0;
-
-        for(int i=0; i<hrvsig.length; i++) {
-            sum = sum + Math.pow(hrvsig[i],2);
-        }
-
-        double RootMeanSquare = Math.sqrt(sum)/hrvsig.length;
-        return RootMeanSquare;
+    public static double rms(double[] signal) {
+        return Math.sqrt(StatUtils.sumSq(signal)/signal.length);
     }
 
     public static double nn50(double[] hrvsig){
@@ -157,47 +101,39 @@ public class FeatureExtractor {
         }
 
         double NN50 = counter;
-        double pNN50 = (counter/hrvsig.length)*100;
+        //double pNN50 = (counter/hrvsig.length)*100;
 
         return NN50;
-        return pNN50;
+        //return pNN50;
     }
-}
 
     public static double activity(double[] hrvsig){
-        ac = StatUtils.variance(hrvsig);
+        double ac = StatUtils.variance(hrvsig);
         return ac;
     }
 
-    public double diff(double[] hrvsig){
-        j = 0;
-
-        for(i = 0; i < hrvsig.length; i++) {
-            y[j] = (hrvsig[i] - hrvsig[i - 1]);
-            j++;
+    public static double[] diff(double[] hrvsig){
+        double[] y = new double[hrvsig.length-1];
+        for(int i = 0; i < hrvsig.length-1; i++) {
+            y[i] = (hrvsig[i+1] - hrvsig[i]);
         }
+        return y;
     }
 
     public static double mobility(double[] hrvsig){
-
-        double diffsig = diff(hrvsig);
-
-
-
+        double[] diffsig = diff(hrvsig);
         double mob = Math.sqrt(StatUtils.variance(diffsig))/StatUtils.variance(hrvsig);
         return mob;
     }
 
     public static double complexity(double[] hrvsig){
-        double diffsig = diff(hrvsig);
-        double diffdiffsig = diff(diffsig);
-
+        double [] diffsig = diff(hrvsig);
+        double[] diffdiffsig = diff(diffsig);
         double com = (Math.sqrt(StatUtils.variance(diffdiffsig))/StatUtils.variance(diffsig))/(Math.sqrt(StatUtils.variance(diffsig)/StatUtils.variance(hrvsig)));
-
         return com;
     }
 
-    string name1 = "Mean";
+    /*string name1 = "Mean";
     string name2 = "Standard deviation";
     string name3 = 'Root mean square';
     string name4 = 'NN50';
@@ -214,7 +150,6 @@ public class FeatureExtractor {
     this.addfeature(new feature(name6,ac));
     this.addfeature(new feature(name7,mob));
     this.addfeature(new feature(name8,com));
-
+*/
     }
 
-}

@@ -102,7 +102,6 @@ public class QRSDetector extends FeatureExtractor {
 
         // Thresholding and online decision rule
         for (int i=0; i<peakLocs.length; i++){
-            System.out.println(i);
             // Locate the corresponding peak in filtered signal
             if(peakLocs[i]-Math.round(0.150*fs) >= 0 && peakLocs[i]<ecgF.length){
                 yi = StatUtils.max(ecgF, (int) (peakLocs[i]-Math.round(0.150*fs)), (int) Math.round(0.150*fs));
@@ -238,8 +237,6 @@ public class QRSDetector extends FeatureExtractor {
             skip = false;
             notNoise = false;
             searchBack = false;
-            if (Math.floorMod(i, 200) == 0 )
-                System.out.println(i);
         }
         List<Double> tmpPeak = new ArrayList<>();
         List<Integer> tmpIdx = new ArrayList<>();
