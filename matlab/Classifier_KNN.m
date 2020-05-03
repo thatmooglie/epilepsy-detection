@@ -1,7 +1,7 @@
 function [test_data]=Classifier_KNN(test_RR_signal)
 % function Classifier_SVM(test_RR_signal)
 % this classifier gets a input HR signal and predict when the seizure is
-% happining. It uses a SVM classifier with 83.3 % accuracy.
+% happining. Before runnning this function make sure to have loaded the classifier model name: "KNN_833_9p_5f"
 
     n = 20;         % order of the filter
     test_RR_signal.HF_F = medfilt1(test_RR_signal.HR,n);
