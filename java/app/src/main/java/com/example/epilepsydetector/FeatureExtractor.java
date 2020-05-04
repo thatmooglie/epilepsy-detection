@@ -1,6 +1,8 @@
 package com.example.epilepsydetector;
 
 
+import android.util.Log;
+
 import java.util.List;
 
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
@@ -9,7 +11,11 @@ import org.apache.commons.math3.stat.StatUtils;
 import java.util.stream.IntStream;
 import org.apache.commons.math3.analysis.interpolation.LinearInterpolator;
 
+import pantompkins.QRSDetector;
+
 public class FeatureExtractor {
+    private static final String LOG_TAG = "Feature Extractor";
+
     private List<Feature> features;
     private double[] ecg;
     private double [] featureValues;
@@ -17,35 +23,16 @@ public class FeatureExtractor {
     private double[] stdvec;
 
 
-    public FeatureExtractor(double[] ecg){
+    FeatureExtractor(double[] ecg){
         this.ecg = ecg;
     }
 
-    public FeatureExtractor(){
+    protected FeatureExtractor(){
 
     }
-    public double[] extract() {
-        double[] feature = new double[5];
 
-        if (Linearphasedetect(ecg, 1) == 0) {
-            return feature;
-        } else {
-            feature[2] = Linearphasedetect(ecg, 1);
-            feature[3] = Linearphasedetect(ecg, 2);
-            feature[4] = Linearphasedetect(ecg, 3);
-            feature[0] = getMobility();    // name of the function that calculates the mobility
-            feature[1] = getPNN50();    // name of the function that calculates the pNN50
-            return feature;
-        }
-    }
 	// maybe this function should be outside the extract function (I don't know, but if not when maybe the text over this should be move to another function)
-        public double[] normalize(double[] features){
-            double[] normfeatures = new double[features.length];
-            for(int i=0;i<features.length;i++){
-                normfeatures[i] = (features[i] - meanvec[i]) / stdvec[i];
-            }
-           return normfeatures;
-        }
+
 
     public void setFeatures(List<Feature> features){
         this.features = features;
@@ -83,8 +70,29 @@ public class FeatureExtractor {
         return hrSig;
     }
 
-    public double[] extractHRV(int[] rSignal){
+    // FUNCTIONS
 
+    public double[] extract() {
+        double [] hrvSig = extractHRV();
+        double [] hrSig = extractHR(hrvSig);
+        getMobility(hrvSig);    // name of the function that calculates the mobility
+        getPNN50(hrvSig);
+        linearPhaseDetect(hrSig, 1);
+        if(features.get(2).getValue()==0) {
+            Log.d(LOG_TAG, "No Linear Phase found");
+            return null;
+        }
+        else{
+            linearPhaseDetect(hrSig, 2);
+            linearPhaseDetect(hrSig, 3);
+            return normalize(this.getFeatureValues());
+        }
+    }
+
+    public double[] extractHRV(){
+        QRSDetector qrsDetector = new QRSDetector(ecg);
+        qrsDetector.detect();
+        int[] rSignal = qrsDetector.getIndices();
         double[] rrInterval = new double[rSignal.length-1];
         int[] rrIndices = new int[rSignal.length-1];
         double[] rrDIndices = new double[rSignal.length-1];
@@ -103,24 +111,26 @@ public class FeatureExtractor {
         return hrvSig;
     }
 
-    // Add extraction functions here
-    public double getMean(double[] signal) {
-        return StatUtils.mean(signal);
+    // feature extraction functions here
+    public void getMean(double[] signal) {
+        features.add(new Feature("mean", StatUtils.mean(signal)));
+        //return StatUtils.mean(signal);
     }
 
-    public static double getSTD(double[] signal) {
-        return Math.sqrt(StatUtils.variance(signal));
+    public void getSTD(double[] signal) {
+        features.add(new Feature("std", Math.sqrt(StatUtils.variance(signal))));
     }
 
-    public static double getRMS(double[] signal) {
-        return Math.sqrt(StatUtils.sumSq(signal)/signal.length);
+    public void getRMS(double[] signal) {
+        features.add(new Feature("RMS", Math.sqrt(StatUtils.sumSq(signal)/signal.length)));
     }
 	
-public double Linearphasedetect(double[] ecg, int flag){
+private void linearPhaseDetect(double[] ecg, int flag){
         int max_i = 0;
         int min_i = 0;
         double max = ecg[0];
         double min = ecg[1];
+
         // this findes the max and min value
         for(int i = 1; i < ecg.length; i++){
             if(ecg[i] > max) {
@@ -132,7 +142,7 @@ public double Linearphasedetect(double[] ecg, int flag){
             }
         }
         //calculating the length
-        int lenght = max_i -min_i;
+        int length = max_i -min_i;
         // calculating the slope
         double slope;
         if(max_i > min_i){
@@ -140,43 +150,45 @@ public double Linearphasedetect(double[] ecg, int flag){
         }else{
             slope = 0;
         }
-        if(slope > 1.1 && lenght > 12 && max > 80 && (max-ecg[1])> 15){
+        if(slope > 1.1 && length > 12 && max > 80 && (max-ecg[1])> 15){
             if (endpoint > 0){
                 if((ecg[1]-endpoint)> 150){
 
                     if (flag ==1){
-                        return max;
+                        features.add(new Feature("Max LinPhase", max));
                     }else if (flag == 2){
-                        return lenght;
+                        features.add(new Feature("Length LinPhase", length));
                     }else if (flag == 3){
                         double sum =0;
-                        for(int i = 0; i<ecg.length;i++){
-                            sum = sum + ecg[i];
+                        for (double v : ecg) {
+                            sum = sum + v;
                         }
-                        return (sum/ecg.length);
+                        return;
+                        features.add(new Feature("Mean LinPhase", (sum/ecg.length)));
                     }else{
-                        return 0;
+                        features.add(new Feature("linPhase", 0));
                     }
                 }
             }else{
-                endpoint = ecg[ecg.length-1];
+                double endpoint = ecg.length-1;
                 if (flag ==1){
-                    return max;
+                    features.add(new Feature("Max LinPhase", max));
                 }else if (flag == 2){
-                    return lenght;
+                    features.add(new Feature("Length LinPhase", length));
                 }else if (flag == 3){
                     double sum =0;
                     for(int i = 0; i<ecg.length;i++){
                         sum = sum + ecg[i];
                     }
-                    return (sum/ecg.length);
+                    features.add(new Feature("Mean LinPhase", (sum/ecg.length)));
                 }else{
-                    return 0;
+                    features.add(new Feature("linPhase", 0));
                 }
             }
-        }else return 0;
+        }else features.add(new Feature("linPhase", 0));
     }
-    public static double getPNN50(double[] hrvsig){
+
+    private void getPNN50(double[] hrvsig){
         int counter = 0;
 
         for(int i=0; i<hrvsig.length; i++) {
@@ -185,34 +197,42 @@ public double Linearphasedetect(double[] ecg, int flag){
             }
         }
         double pNN50 = (counter/hrvsig.length)*100;
-        return pNN50;
+        features.add(new Feature("pnn50", pNN50));
     }
 
-    public static double getActivity(double[] hrvsig){
-        double ac = StatUtils.variance(hrvsig);
-        return ac;
+    public void getActivity(double[] hrvSig){
+        features.add(new Feature("Activity", StatUtils.variance(hrvSig)));
     }
 
-    public static double[] diff(double[] hrvsig){
-        double[] y = new double[hrvsig.length-1];
-        for(int i = 0; i < hrvsig.length-1; i++) {
-            y[i] = (hrvsig[i+1] - hrvsig[i]);
-        }
-        return y;
+
+    private void getMobility(double[] hrvSig){
+        double[] diffsig = diff(hrvSig);
+        features.add(new Feature("Mobility", Math.sqrt(StatUtils.variance(diffsig)/StatUtils.variance(hrvSig))));
     }
 
-    public static double getMobility(double[] hrvsig){
-        double[] diffsig = diff(hrvsig);
-
-        double mob = Math.sqrt(StatUtils.variance(diffsig))/StatUtils.variance(hrvsig);
-        return mob;
-    }
-
-    public static double complexity(double[] hrvsig){
+    public void complexity(double[] hrvsig){
         double [] diffsig = diff(hrvsig);
         double[] diffdiffsig = diff(diffsig);
-        double com = (Math.sqrt(StatUtils.variance(diffdiffsig))/StatUtils.variance(diffsig))/(Math.sqrt(StatUtils.variance(diffsig)/StatUtils.variance(hrvsig)));
-        return com;
+        double com = Math.sqrt(StatUtils.variance(diffdiffsig)/StatUtils.variance(diffsig))/Math.sqrt(StatUtils.variance(diffsig)/StatUtils.variance(hrvsig));
+        features.add(new Feature("Complexity", com));
+    }
+
+    // Helper Functions
+
+    private double[] normalize(double[] features){
+        double[] normfeatures = new double[features.length];
+        for(int i=0;i<features.length;i++){
+            normfeatures[i] = (features[i] - meanvec[i]) / stdvec[i];
+        }
+        return normfeatures;
+    }
+
+    private static double[] diff(double[] hrvsig){
+        double[] y = new double[hrvsig.length-1];
+        for(int i = 0; i < y.length-1; i++) {
+            y[i] = hrvsig[i+1] - hrvsig[i];
+        }
+        return y;
     }
 
     /*string name1 = "Mean";

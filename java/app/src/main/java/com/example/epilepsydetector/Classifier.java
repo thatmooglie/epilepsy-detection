@@ -3,9 +3,22 @@ import java.lang.Math;
 import java.util.Arrays;
 
 public class Classifier {
+    private double[] ecgData;
     private double [] featureValues;
+    public boolean seizure;
+
+    public Classifier(double[] ecg){
+        this.ecgData = ecg;
+    }
+
+    public void predict() {
+        FeatureExtractor fe = new FeatureExtractor(ecgData);
+        featureValues = fe.getFeatureValues();
+        weightedkNN();
+    }
+
     // Classifier
-    public int weightedkNN(){
+    private void weightedkNN(){
 
         int n = 12;         // number of data points
         int k = 10;         // number of neighbors include in decision
@@ -25,11 +38,11 @@ public class Classifier {
 
         // Fill weighted distances of all points from the featureValues
         for (int i = 0; i < n; i++){
-            dis[i] = (Math.sqrt((Mobi_coor[i]- featureValues[1]) * (Mobi_coor[i] - featureValues[1]) +
-                    (PNN_coor[i] - featureValues[2]) * (PNN_coor[i] - featureValues[2]) +
-                    (Max[i] - featureValues[3]) * (Max[i] - featureValues[3]) +
-                    (leng[i] - featureValues[5]) * (leng[i] - featureValues[5]) +
-                    (mea[i] - featureValues[6]) * (mea[i] - featureValues[6])));
+            dis[i] = (Math.sqrt((Mobi_coor[i]- featureValues[0]) * (Mobi_coor[i] - featureValues[0]) +
+                    (PNN_coor[i] - featureValues[1]) * (PNN_coor[i] - featureValues[1]) +
+                    (Max[i] - featureValues[2]) * (Max[i] - featureValues[2]) +
+                    (leng[i] - featureValues[3]) * (leng[i] - featureValues[3]) +
+                    (mea[i] - featureValues[4]) * (mea[i] - featureValues[4])));
         }
 
         // Sort the Points by weighted distance from p
@@ -49,8 +62,9 @@ public class Classifier {
                     freq2 += (1/Math.pow(dis[i],2));}
             }
         }
+        seizure = (!(freq1 > freq2));
         // returning the label value
-        return (freq1 > freq2 ? 0 : 1);
+        //return (freq1 > freq2 ? 0 : 1);
     }
 
 }
