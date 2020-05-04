@@ -159,14 +159,9 @@ private void linearPhaseDetect(double[] ecg, int flag){
                     }else if (flag == 2){
                         features.add(new Feature("Length LinPhase", length));
                     }else if (flag == 3){
-                        double sum =0;
-                        for (double v : ecg) {
-                            sum = sum + v;
-                        }
-                        return;
-                        features.add(new Feature("Mean LinPhase", (sum/ecg.length)));
+                        features.add(new Feature("RelativeMaxLinPhase", max/ecg[0]));
                     }else{
-                        features.add(new Feature("linPhase", 0));
+                        features.add(new Feature("isLinPhase", 0));
                     }
                 }
             }else{
@@ -176,16 +171,12 @@ private void linearPhaseDetect(double[] ecg, int flag){
                 }else if (flag == 2){
                     features.add(new Feature("Length LinPhase", length));
                 }else if (flag == 3){
-                    double sum =0;
-                    for(int i = 0; i<ecg.length;i++){
-                        sum = sum + ecg[i];
-                    }
-                    features.add(new Feature("Mean LinPhase", (sum/ecg.length)));
+                    features.add(new Feature("RelativeMaxLinPhase", max/ecg[0]));
                 }else{
-                    features.add(new Feature("linPhase", 0));
+                    features.add(new Feature("isLinPhase", 0));
                 }
             }
-        }else features.add(new Feature("linPhase", 0));
+        }else features.add(new Feature("isLinPhase", 0));
     }
 
     private void getPNN50(double[] hrvsig){
