@@ -19,8 +19,8 @@ public class FeatureExtractor {
     private List<Feature> features;
     private double[] ecg;
     private double [] featureValues;
-    private double[] meanvec;
-    private double[] stdvec;
+    private double[] meanvec = {0.2013, 81.8627, 94.3435, 15.0833, 1.2927};
+    private double[] stdvec = {0.071, 12.9018, 9.5021, 1.2401, 0.1186};
 
 
     FeatureExtractor(double[] ecg){
