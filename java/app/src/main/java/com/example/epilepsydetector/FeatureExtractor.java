@@ -151,31 +151,15 @@ private void linearPhaseDetect(double[] ecg, int flag){
             slope = 0;
         }
         if(slope > 1.1 && length > 12 && max > 80 && (max-ecg[1])> 15){
-            if (endpoint > 0){
-                if((ecg[1]-endpoint)> 150){
-
-                    if (flag ==1){
-                        features.add(new Feature("Max LinPhase", max));
-                    }else if (flag == 2){
-                        features.add(new Feature("Length LinPhase", length));
-                    }else if (flag == 3){
-                        features.add(new Feature("RelativeMaxLinPhase", max/ecg[0]));
-                    }else{
-                        features.add(new Feature("isLinPhase", 0));
-                    }
-                }
-            }else{
-                double endpoint = ecg.length-1;
-                if (flag ==1){
-                    features.add(new Feature("Max LinPhase", max));
-                }else if (flag == 2){
-                    features.add(new Feature("Length LinPhase", length));
-                }else if (flag == 3){
-                    features.add(new Feature("RelativeMaxLinPhase", max/ecg[0]));
-                }else{
-                    features.add(new Feature("isLinPhase", 0));
-                }
-            }
+	    if (flag ==1){
+		features.add(new Feature("Max LinPhase", max));
+	    }else if (flag == 2){
+		features.add(new Feature("Length LinPhase", length));
+	    }else if (flag == 3){
+		features.add(new Feature("RelativeMaxLinPhase", max/ecg[0]));
+	    }else{
+		features.add(new Feature("isLinPhase", 0));
+	    }
         }else features.add(new Feature("isLinPhase", 0));
     }
 
