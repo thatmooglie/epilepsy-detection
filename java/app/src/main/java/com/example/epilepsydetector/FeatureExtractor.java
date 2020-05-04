@@ -124,7 +124,8 @@ public class FeatureExtractor {
     public void getRMS(double[] signal) {
         features.add(new Feature("RMS", Math.sqrt(StatUtils.sumSq(signal)/signal.length)));
     }
-	
+
+
 private void linearPhaseDetect(double[] ecg, int flag){
         int max_i = 0;
         int min_i = 0;
@@ -208,6 +209,15 @@ private void linearPhaseDetect(double[] ecg, int flag){
             y[i] = hrvsig[i+1] - hrvsig[i];
         }
         return y;
+    }
+
+    private double[] meanfilt(double[] hrsig){
+        double[] filtersig = new double[hrsig.length-1];
+
+        for(int i=0; i<filtersig.length-1;i++){
+                filtersig[i] = hrsig[i] / StatUtils.mean(hrsig[0:i]);
+        }
+        return filtersig;
     }
 
     /*string name1 = "Mean";
