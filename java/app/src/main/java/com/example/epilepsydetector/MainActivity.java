@@ -133,7 +133,6 @@ public class MainActivity extends AppCompatActivity {
                     ecgSignal.add(Double.parseDouble(recString));
                     timeECG.add((ecgSignal.size()-1)/200.0);
                     Log.d("Data Value:", String.valueOf(timeECG.get(timeECG.size()-1)));
-                    //series.appendData(new DataPoint(timeECG.get(timeECG.size()-1), ecgSignal.get(ecgSignal.size()-1)), true, 10*200);
 
                     runOnUiThread(new Runnable() {
                         @Override
@@ -172,18 +171,7 @@ public class MainActivity extends AppCompatActivity {
         int size = tmpData.size();
         QRSDetector detector = new QRSDetector();
         if (size<3000) {
-            /*double[] data = new double[size];
-            for (int i = 0; i < size; i++) {
-                data[i] = -tmpData.get(i);
-            }
-            detector.setEcgData(data);
-            detector.detect();
-            int[] rLocs = detector.getIndices();
-            if (rLocs.length > 1) {
-                updateHR(60 / ((rLocs[rLocs.length - 1] - rLocs[rLocs.length - 2]) / 1000));
-            }
-
-             */
+            Log.d(LOG_TAG, "not enough data to calculate HR");
         }else{
             double [] data = new double[3000];
             for(int i=0; i<3000;i++){
@@ -194,11 +182,8 @@ public class MainActivity extends AppCompatActivity {
             int[] rLocs = detector.getIndices();
             if (rLocs.length > 1) {
                 try{
-                    //double interval = (double)(rLocs[rLocs.length - 1] - rLocs[rLocs.length - 2]) / 200;
                     hr = rLocs.length*4;
-                }
-                catch(ArithmeticException ignore){
-                    Log.w("sas", ignore);
+                }catch(ArithmeticException ignore){
                 }
             }
         }

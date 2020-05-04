@@ -19,14 +19,10 @@ public class QRSDetector extends FeatureExtractor {
     private double [] peaks;
     private int[] indices;
 
-    double thresholdI1 = 0;
-    double thresholdI2 = 0;
-    double thresholdF1 = 0;
-    double thresholdF2 = 0;
-
-
-
-
+    private double thresholdI1 = 0;
+    private double thresholdI2 = 0;
+    private double thresholdF1 = 0;
+    private double thresholdF2 = 0;
 
 
     public QRSDetector(double[] ecg){
