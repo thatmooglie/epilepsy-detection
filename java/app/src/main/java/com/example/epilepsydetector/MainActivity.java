@@ -227,13 +227,21 @@ public class MainActivity extends AppCompatActivity {
         ser.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
-                classify();}},
+                boolean seizure = classify();
+                if(seizure){
+                    try {
+                        sendWarning();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }},
                 0, 3, TimeUnit.SECONDS);
 
 
     };
 
-    private void sendWarning() {
+    private void sendWarning() throws InterruptedException {
         Notification notification = new NotificationCompat.Builder(this, app.CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_warning_black_24dp)
                 .setContentTitle("EPILEPSY WARNING!")
@@ -242,6 +250,7 @@ public class MainActivity extends AppCompatActivity {
                 .setTimeoutAfter(15000)
                 .build();
         notificationManager.notify(1, notification);
+        Thread.sleep(5*60*100);
     }
 
     private void calculateHeartRate() {
@@ -267,7 +276,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void classify(){
+    private boolean classify(){
         try {
             List<Double> tmpData = ecgSignal;
             if(tmpData.size() < winSize){
@@ -282,13 +291,17 @@ public class MainActivity extends AppCompatActivity {
 
                 Classifier classifier = new Classifier(data);
                 classifier.predict();
-                if(classifier.seizure){
-                    sendWarning();
-                }
+                //if(classifier.seizure){
+                 //   sendWarning();
+                //}
+
+                return classifier.seizure;
+
             }
         }catch (Exception e) {
             Log.w("Classifier", e);
         }
+        return false;
     }
 
     private void updateHR(int HR) {

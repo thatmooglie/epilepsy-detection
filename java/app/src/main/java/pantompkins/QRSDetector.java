@@ -143,11 +143,15 @@ public class QRSDetector extends FeatureExtractor {
                 if (peakLocs[i] - qrsI.get(qrsI.size()-1) >= Math.round(1.66*tempM)) {
                     int start = (int) (qrsI.get(qrsI.size()-1)+Math.round(0.2*fs));
                     int end = (int)(peakLocs[i]-Math.round(0.2*fs));
+                    if(start>ecgM.length-1)
+                        start=ecgM.length-1;
+                    else if(end>ecgM.length-1)
+                        end = ecgM.length-1;
                     double peakTemp = 0;
                     try{
                         peakTemp = StatUtils.max(ecgM, (int) (qrsI.get(qrsI.size() - 1) + Math.round(0.2 * fs)), Math.abs(end-start));
-                    }catch (Exception ignored){
-                        Log.w("GKFA", ignored);
+                    }catch (Exception NumberIsTooLargeException){
+                        peakTemp = StatUtils.max(ecgM, (int) ((qrsI.get(qrsI.size() - 1) + Math.round(0.2 * fs))), ecgM.length-1-qrsI.get(qrsI.size()-1));
                     }
 
                     int locTemp = argmax(ecgM, (int) (qrsI.get(qrsI.size() - 1) + Math.round(0.2 * fs)), (int) (peakLocs[i]-Math.round(0.2*fs))-1);

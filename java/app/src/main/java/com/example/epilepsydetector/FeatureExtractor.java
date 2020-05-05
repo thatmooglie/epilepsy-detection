@@ -213,7 +213,7 @@ private void linearPhaseDetect(double[] ecg, int flag){
         double[] filtersig = new double[hrsig.length-1];
 
         for(int i=0; i<filtersig.length-1;i++){
-            filtersig[i] = hrsig[i] / StatUtils.mean(hrsig[0:i]);
+            filtersig[i] = hrsig[i] / StatUtils.mean(hrsig);
         }
         return filtersig;
     }
