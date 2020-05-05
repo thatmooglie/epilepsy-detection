@@ -20,8 +20,8 @@ public class FeatureExtractor {
     private List<Feature> features = new ArrayList<>();
     private double[] ecg;
     private double [] featureValues;
-    private double[] meanvec;
-    private double[] stdvec;
+    private double[] meanvec = {0.2013, 81.8627, 94.3435, 15.0833, 1.2927};
+    private double[] stdvec = {0.071, 12.9018, 9.5021, 1.2401, 0.1186};
 
 
     FeatureExtractor(double[] ecg){
@@ -122,7 +122,8 @@ public class FeatureExtractor {
     public void getRMS(double[] signal) {
         features.add(new Feature("RMS", Math.sqrt(StatUtils.sumSq(signal)/signal.length)));
     }
-	
+
+
 private void linearPhaseDetect(double[] ecg, int flag){
         int max_i = 0;
         int min_i = 0;
@@ -207,5 +208,15 @@ private void linearPhaseDetect(double[] ecg, int flag){
         }
         return y;
     }
+
+    private double[] meanfilt(double[] hrsig){
+        double[] filtersig = new double[hrsig.length-1];
+
+        for(int i=0; i<filtersig.length-1;i++){
+            filtersig[i] = hrsig[i] / StatUtils.mean(hrsig[0:i]);
+        }
+        return filtersig;
+    }
+
 }
 
