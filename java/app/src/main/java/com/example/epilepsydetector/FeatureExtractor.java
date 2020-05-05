@@ -3,6 +3,7 @@ package com.example.epilepsydetector;
 
 import android.util.Log;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
@@ -16,7 +17,7 @@ import pantompkins.QRSDetector;
 public class FeatureExtractor {
     private static final String LOG_TAG = "Feature Extractor";
 
-    private List<Feature> features;
+    private List<Feature> features = new ArrayList<>();
     private double[] ecg;
     private double [] featureValues;
     private double[] meanvec;
@@ -28,11 +29,9 @@ public class FeatureExtractor {
     }
 
     protected FeatureExtractor(){
-
     }
 
-	// maybe this function should be outside the extract function (I don't know, but if not when maybe the text over this should be move to another function)
-
+    // Getter and Setter functions
 
     public void setFeatures(List<Feature> features){
         this.features = features;
@@ -70,7 +69,7 @@ public class FeatureExtractor {
         return hrSig;
     }
 
-    // FUNCTIONS
+    // Feature extraction functions
 
     public double[] extract() {
         double [] hrvSig = extractHRV();
@@ -111,7 +110,6 @@ public class FeatureExtractor {
         return hrvSig;
     }
 
-    // feature extraction functions here
     public void getMean(double[] signal) {
         features.add(new Feature("mean", StatUtils.mean(signal)));
         //return StatUtils.mean(signal);
@@ -131,7 +129,7 @@ private void linearPhaseDetect(double[] ecg, int flag){
         double max = ecg[0];
         double min = ecg[1];
 
-        // this findes the max and min value
+        // this finds the max and min value
         for(int i = 1; i < ecg.length; i++){
             if(ecg[i] > max) {
                 max = ecg[i];
@@ -164,10 +162,10 @@ private void linearPhaseDetect(double[] ecg, int flag){
     }
 
     private void getPNN50(double[] hrvsig){
-        int counter = 0;
+        double counter = 0;
 
-        for(int i=0; i<hrvsig.length; i++) {
-            if(Math.abs(hrvsig[i-1]-hrvsig[i]) > 0.05){
+        for(int i=0; i<hrvsig.length-1; i++) {
+            if(Math.abs(hrvsig[i+1]-hrvsig[i]) > 0.05){
                 counter = counter + 1;
             }
         }
@@ -209,24 +207,5 @@ private void linearPhaseDetect(double[] ecg, int flag){
         }
         return y;
     }
-
-    /*string name1 = "Mean";
-    string name2 = "Standard deviation";
-    string name3 = "Root mean square";
-    string name4 = "NN50";
-    string name5 = "pNN50";
-    string name6 = "Activity";
-    string name7 = "Mobility";
-    string name8 = "Complexity";
-
-    this.addfeature(new feature(name1,Mean));
-    this.addfeature(new feature(name2,standardDeviation));
-    this.addfeature(new feature(name3,RootMeanSquare));
-    this.addfeature(new feature(name4,NN50));
-    this.addfeature(new feature(name5,pNN50));
-    this.addfeature(new feature(name6,ac));
-    this.addfeature(new feature(name7,mob));
-    this.addfeature(new feature(name8,com));
-*/
-    }
+}
 

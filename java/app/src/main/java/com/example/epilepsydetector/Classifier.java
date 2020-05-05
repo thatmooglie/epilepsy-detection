@@ -2,6 +2,8 @@ package com.example.epilepsydetector;
 import java.lang.Math;
 import java.util.Arrays;
 
+import edu.stanford.nlp.maxent.Feature;
+
 public class Classifier {
     private double[] ecgData;
     private double [] featureValues;
@@ -13,8 +15,13 @@ public class Classifier {
 
     public void predict() {
         FeatureExtractor fe = new FeatureExtractor(ecgData);
-        featureValues = fe.getFeatureValues();
-        weightedkNN();
+        featureValues = fe.extract();
+        if (featureValues!=null) {
+            weightedkNN();
+        }
+        else{
+            seizure = false;
+        }
     }
 
     // Classifier

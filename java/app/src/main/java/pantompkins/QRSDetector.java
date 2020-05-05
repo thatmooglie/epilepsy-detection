@@ -1,5 +1,7 @@
 package pantompkins;
 
+import android.util.Log;
+
 import com.example.epilepsydetector.FeatureExtractor;
 
 import org.apache.commons.math3.stat.StatUtils;
@@ -141,7 +143,13 @@ public class QRSDetector extends FeatureExtractor {
                 if (peakLocs[i] - qrsI.get(qrsI.size()-1) >= Math.round(1.66*tempM)) {
                     int start = (int) (qrsI.get(qrsI.size()-1)+Math.round(0.2*fs));
                     int end = (int)(peakLocs[i]-Math.round(0.2*fs));
-                    double peakTemp = StatUtils.max(ecgM, (int) (qrsI.get(qrsI.size() - 1) + Math.round(0.2 * fs)), end-start);
+                    double peakTemp = 0;
+                    try{
+                        peakTemp = StatUtils.max(ecgM, (int) (qrsI.get(qrsI.size() - 1) + Math.round(0.2 * fs)), Math.abs(end-start));
+                    }catch (Exception ignored){
+                        Log.w("GKFA", ignored);
+                    }
+
                     int locTemp = argmax(ecgM, (int) (qrsI.get(qrsI.size() - 1) + Math.round(0.2 * fs)), (int) (peakLocs[i]-Math.round(0.2*fs))-1);
                     locTemp = (int) (qrsI.get(qrsI.size() - 1) + Math.round(0.2 * fs) + locTemp - 1);
 
@@ -294,9 +302,9 @@ public class QRSDetector extends FeatureExtractor {
 
 
     private int argmax(double[] sig, int start, int end){
-        double[] signalRange = new double[end-start];
-        for(int i = start; i<end; i++){
-            signalRange[i-start] = sig[i];
+        double[] signalRange = new double[Math.abs(end-start)];
+        for(int i = Math.min(start,end); i<Math.max(start,end); i++){
+            signalRange[i-Math.min(start,end)] = sig[i];
         }
         return ArrayMath.argmax(signalRange);
     }

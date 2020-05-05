@@ -1,9 +1,15 @@
 package com.example.epilepsydetector;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -25,8 +31,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import pantompkins.Filter;
 import pantompkins.QRSDetector;
@@ -40,35 +51,38 @@ public class MainActivity extends AppCompatActivity {
     private Context mContext;
     static String LOG_TAG = "jeje";
 
-    File externalStorage;
-    File path;
-    File file;
-    FileInputStream fIn;
-    InputStreamReader isr;
-    BufferedReader bufferedReader;
+    private File externalStorage;
+    private File path;
+    private File file;
+    private FileInputStream fIn;
+    private InputStreamReader isr;
+    private BufferedReader bufferedReader;
+
+    private NotificationManagerCompat notificationManager;
 
     public List<Double> ecgSignal = Collections.synchronizedList(new ArrayList<>());
     public List<Double> timeECG = Collections.synchronizedList(new ArrayList<>());
-    public List<Double> filteredECG = Collections.synchronizedList(new ArrayList<>());
     LineGraphSeries<DataPoint> series = new LineGraphSeries<>();
-    PointsGraphSeries<DataPoint> points;
     int hr = 0;
+    final static int winSize = 200 * 16;
 
     GraphView graph;
     TextView heartRate;
-
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        notificationManager = NotificationManagerCompat.from(this);
+
         graph = (GraphView) findViewById(R.id.graph);
         heartRate = findViewById(R.id.heartrate);
         heartRate.setText("   ");
 
         // data
-        series = new LineGraphSeries<DataPoint>();
+        series = new LineGraphSeries<>();
         graph.addSeries(series);
         // customize a little bit viewport
         Viewport viewport = graph.getViewport();
@@ -116,6 +130,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -131,9 +146,7 @@ public class MainActivity extends AppCompatActivity {
                         e.printStackTrace();
                     }
                     ecgSignal.add(Double.parseDouble(recString));
-                    timeECG.add((ecgSignal.size()-1)/200.0);
-                    Log.d("Data Value:", String.valueOf(timeECG.get(timeECG.size()-1)));
-
+                    timeECG.add((ecgSignal.size() - 1) / 200.0);
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -151,10 +164,10 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }).start();
-        new Thread(new Runnable() {
+        /*new Thread(new Runnable() {
             @Override
             public void run() {
-                while(true){
+                while (true) {
                     calculateHeartRate();
                     try {
                         Thread.sleep(500);
@@ -163,36 +176,125 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             }
-        }).start();
+        }).start();*/
+
+        ScheduledExecutorService hrServ = Executors.newSingleThreadScheduledExecutor();
+        hrServ.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                calculateHeartRate();
+            }
+        }, 15000, (long) 500, TimeUnit.MILLISECONDS);
+
+        /*new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                try {
+                    Thread.sleep(winSize);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                while (true) {
+                    if (ecgSignal.size() > winSize) {
+                        double[] data = new double[winSize];
+                        for (int i = 0; i < winSize; i++) {
+                            data[i] = ecgSignal.get(ecgSignal.size() - (winSize - i));
+                        }
+                        Classifier classifier = new Classifier(data);
+                        classifier.predict();
+                        if (classifier.seizure) {
+                            sendWarning();
+                            try {
+                                Thread.sleep(1000 * 5 * 60);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        } else {
+                            try {
+                                Thread.sleep(3000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+
+                }
+
+            }
+        }).start();*/
+        ScheduledExecutorService ser = Executors.newSingleThreadScheduledExecutor();
+        ser.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                classify();}},
+                0, 3, TimeUnit.SECONDS);
+
+
+    };
+
+    private void sendWarning() {
+        Notification notification = new NotificationCompat.Builder(this, app.CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_warning_black_24dp)
+                .setContentTitle("EPILEPSY WARNING!")
+                .setContentText("POSSIBLE SEIZURE DETECTED!")
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setTimeoutAfter(15000)
+                .build();
+        notificationManager.notify(1, notification);
     }
 
     private void calculateHeartRate() {
         List<Double> tmpData = ecgSignal;
         int size = tmpData.size();
         QRSDetector detector = new QRSDetector();
-        if (size<3000) {
+        if (size < 3000) {
             Log.d(LOG_TAG, "not enough data to calculate HR");
-        }else{
-            double [] data = new double[3000];
-            for(int i=0; i<3000;i++){
-                data[i] = -tmpData.get(tmpData.size()-(3000-i));
+        } else {
+            double[] data = new double[3000];
+            for (int i = 0; i < 3000; i++) {
+                data[i] = -tmpData.get(tmpData.size() - (3000 - i)-1);
             }
             detector.setEcgData(data);
             detector.detect();
             int[] rLocs = detector.getIndices();
             if (rLocs.length > 1) {
-                try{
-                    hr = rLocs.length*4;
-                }catch(ArithmeticException ignore){
+                try {
+                    hr = rLocs.length * 4;
+                } catch (ArithmeticException ignore) {
                 }
             }
         }
     }
 
+    private void classify(){
+        try {
+            List<Double> tmpData = ecgSignal;
+            if(tmpData.size() < winSize){
+                Log.d("Classifier", "Not enough data");
+            }
+            else{
+                Log.d("Classifier", "Running Classification");
+                double[] data = new double[winSize];
+                for (int i=0; i<=winSize-1 ; i++){
+                    data[i] = tmpData.get(tmpData.size()-(winSize-i));
+                }
+
+                Classifier classifier = new Classifier(data);
+                classifier.predict();
+                if(classifier.seizure){
+                    sendWarning();
+                }
+            }
+        }catch (Exception e) {
+            Log.w("Classifier", e);
+        }
+    }
+
     private void updateHR(int HR) {
-        if (HR == 0){
+        if (HR == 0) {
             heartRate.setText("   ");
-        }else {
+        } else {
             heartRate.setText(String.valueOf(HR));
         }
     }
@@ -200,18 +302,18 @@ public class MainActivity extends AppCompatActivity {
     private double[] filterPlotData(List<Double> tmpData) {
         int size = tmpData.size();
         double[] data = null;
-        if (size<5*200){
+        if (size < 5 * 200) {
             data = new double[size];
-            for (int i=0; i<size-1; i++){
+            for (int i = 0; i < size - 1; i++) {
                 try {
-                    data[i] = -tmpData.get(i);
-                }catch (ArrayIndexOutOfBoundsException e){
+                    data[i] = tmpData.get(i);
+                } catch (ArrayIndexOutOfBoundsException e) {
                 }
             }
-        }else{
+        } else {
             data = new double[1000];
-            for(int i=0; i<1000; i++){
-                data[i] = -tmpData.get(size-(1000-i));
+            for (int i = 0; i < 1000; i++) {
+                data[i] = tmpData.get(size - (1000 - i));
             }
         }
 
@@ -222,7 +324,7 @@ public class MainActivity extends AppCompatActivity {
     private void addEntry() {
         List<Double> tmpData = ecgSignal;
         double[] filtData = filterPlotData(tmpData);
-        series.appendData(new DataPoint(timeECG.get(timeECG.size()-1), filtData[filtData.length/2]), true , 20000);
+        series.appendData(new DataPoint(timeECG.get(timeECG.size() - 1), filtData[filtData.length / 2]), true, 20000);
     }
 
 }

@@ -11,7 +11,7 @@ testData = val;
 %[c,l] = wavedec(testData,4,'db3');
 %D = detcoef(c,l,'db3');
 
-%%[qrs_amp_raw,qrs_i_raw,delay]= pan_tompkin(-testData,200,1);
+[qrs_amp_raw,qrs_i_raw,delay]= pan_tompkin(-testData,200,1);
 %%
 [b,a] = butter(6, 40/100, 'low');
 x = filter(b,a,-testData);
@@ -19,8 +19,9 @@ x = filter(b,a,-testData);
 xx = filter(b,a,x);
 plot(xx)
 %%
+testData = val(810000:840000);
 fileID = fopen('testData.txt', 'w')
-for i=1:length(val)
+for i=1:length(testData)
     fprintf(fileID, '%f\n', -testData(i));
 end
 fclose(fileID);
