@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
+import org.apache.commons.math3.exception.NonMonotonicSequenceException;
 import org.apache.commons.math3.stat.StatUtils;
 
 import java.util.stream.IntStream;
@@ -102,7 +103,12 @@ public class FeatureExtractor {
         }
         int [] newX = IntStream.range(rrIndices[0], rrIndices[rrIndices.length-1]).filter(i -> i%25==0).toArray();
         LinearInterpolator linIntp = new LinearInterpolator();
-        PolynomialSplineFunction rr = linIntp.interpolate(rrDIndices, rrInterval);
+        PolynomialSplineFunction rr = null;
+        try {
+            rr = linIntp.interpolate(rrDIndices, rrInterval);
+        } catch(NonMonotonicSequenceException e){
+            Log.w("HRV", e);
+        }
         double[] hrvSig = new double[newX.length];
         for (int i = 0; i<newX.length; i++) {
             hrvSig[i] = rr.value(newX[i]);

@@ -23,6 +23,8 @@ import com.jjoe64.graphview.series.LineGraphSeries;
 import com.jjoe64.graphview.series.PointsGraphSeries;
 
 import org.apache.commons.math3.exception.ZeroException;
+import org.apache.commons.math3.stat.StatUtils;
+import org.apache.commons.math3.util.MathArrays;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -30,9 +32,12 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -182,7 +187,11 @@ public class MainActivity extends AppCompatActivity {
         hrServ.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
-                calculateHeartRate();
+                try {
+                    calculateHeartRate();
+                } catch (Exception e) {
+                    Log.w("HeartRateCalc", e);
+                }
             }
         }, 15000, (long) 500, TimeUnit.MILLISECONDS);
 
@@ -236,7 +245,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             }},
-                0, 3, TimeUnit.SECONDS);
+                20, 1, TimeUnit.SECONDS);
 
 
     };
@@ -250,7 +259,7 @@ public class MainActivity extends AppCompatActivity {
                 .setTimeoutAfter(15000)
                 .build();
         notificationManager.notify(1, notification);
-        Thread.sleep(5*60*100);
+        //Thread.sleep(5*60*100);
     }
 
     private void calculateHeartRate() {
@@ -264,15 +273,19 @@ public class MainActivity extends AppCompatActivity {
             for (int i = 0; i < 3000; i++) {
                 data[i] = -tmpData.get(tmpData.size() - (3000 - i)-1);
             }
-            detector.setEcgData(data);
+            FeatureExtractor fe = new FeatureExtractor(data);
+            double [] hrv = fe.extractHRV();
+            hr = (int) (200*60/ StatUtils.mean(hrv));
+            Log.d("HR", String.valueOf(hr));
+            /*detector.setEcgData(data);
             detector.detect();
             int[] rLocs = detector.getIndices();
             if (rLocs.length > 1) {
                 try {
                     hr = rLocs.length * 4;
                 } catch (ArithmeticException ignore) {
-                }
-            }
+                }*/
+            //}
         }
     }
 
@@ -283,16 +296,15 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("Classifier", "Not enough data");
             }
             else{
-                Log.d("Classifier", "Running Classification");
+                Log.d("Classifier", "Running Classification " + new SimpleDateFormat("mm:ss").format(Calendar.getInstance().getTime()));
                 double[] data = new double[winSize];
                 for (int i=0; i<=winSize-1 ; i++){
                     data[i] = tmpData.get(tmpData.size()-(winSize-i));
                 }
-
                 Classifier classifier = new Classifier(data);
                 classifier.predict();
                 //if(classifier.seizure){
-                 //   sendWarning();
+                  // sendWarning();
                 //}
 
                 return classifier.seizure;
@@ -305,8 +317,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateHR(int HR) {
-        if (HR == 0) {
-            heartRate.setText("   ");
+        if (HR == 0 || HR > 180) {
+            heartRate.setText("---");
         } else {
             heartRate.setText(String.valueOf(HR));
         }
@@ -318,10 +330,7 @@ public class MainActivity extends AppCompatActivity {
         if (size < 5 * 200) {
             data = new double[size];
             for (int i = 0; i < size - 1; i++) {
-                try {
                     data[i] = tmpData.get(i);
-                } catch (ArrayIndexOutOfBoundsException e) {
-                }
             }
         } else {
             data = new double[1000];
