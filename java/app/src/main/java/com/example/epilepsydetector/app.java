@@ -21,7 +21,7 @@ public class app extends Application {
             @SuppressLint("WrongConstant") NotificationChannel channel = new NotificationChannel(
                     CHANNEL_ID,
                     "Warning Notification Channel",
-                    NotificationManager.IMPORTANCE_MAX
+                    NotificationManager.IMPORTANCE_HIGH
             );
             channel.setDescription("Epilepsy Warning Notification");
 

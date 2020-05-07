@@ -44,6 +44,7 @@ dependencies {
     implementation 'com.sun.xml.bind:jaxb-core:+'
     implementation 'edu.stanford.nlp:stanford-corenlp:3.8.0'
     implementation 'com.jjoe64:graphview:4.2.2'
+    implementation 'com.google.android.material:material:1.1.0'
     //noinspection GradleCompatible
     implementation "com.android.support:support-compat:28.0.0"
 

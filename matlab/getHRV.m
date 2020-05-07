@@ -1,8 +1,20 @@
 function [idxHRV, HRV, RR, idxR, HR, idxHR] = getHRV(ecg, fs)
 %getHRV This function gets as an input an ECG signal and it's sampling
 %frequency and returns the location of R peaks, the RR interval, the
-%resampled RR at 8 Hz (HRV), resample time indices, and Heart Rate
-%   Detailed explanation goes here
+%resampled RR at 8 Hz (HRV), resample time indices, and Heart Rate at 1Hz
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%---INPUT---
+%ecg = the ECG signal
+%fs = the sampling freqeuncy
+%
+%---OUTPUT---
+%idxHRV = Position of the HRV signal
+%HRV = the HRV Signal 
+%RR = the RR interval signal
+%idxR = postition of the RR signal
+%HR = the heartrate signal
+%idxHR = postion of the heartrate signal
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 fsHRV = 8;
 
 [idxR, ~, ~, RR, ~] = get_QRS(ecg, fs, 0);

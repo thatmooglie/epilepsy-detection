@@ -6,13 +6,17 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 import org.apache.commons.math3.exception.NonMonotonicSequenceException;
 import org.apache.commons.math3.stat.StatUtils;
+import org.apache.commons.math3.stat.descriptive.rank.Median;
 
 import java.util.stream.IntStream;
 import org.apache.commons.math3.analysis.interpolation.LinearInterpolator;
+import org.apache.commons.math3.util.MathArrays;
 
+import edu.stanford.nlp.math.ArrayMath;
 import pantompkins.QRSDetector;
 
 public class FeatureExtractor {
@@ -20,7 +24,6 @@ public class FeatureExtractor {
 
     private List<Feature> features = new ArrayList<>();
     private double[] ecg;
-    private double [] featureValues;
     private double[] meanvec = {0.2013, 81.8627, 94.3435, 15.0833, 1.2927};
     private double[] stdvec = {0.071, 12.9018, 9.5021, 1.2401, 0.1186};
 
@@ -116,21 +119,9 @@ public class FeatureExtractor {
         return hrvSig;
     }
 
-    public void getMean(double[] signal) {
-        features.add(new Feature("mean", StatUtils.mean(signal)));
-        //return StatUtils.mean(signal);
-    }
-
-    public void getSTD(double[] signal) {
-        features.add(new Feature("std", Math.sqrt(StatUtils.variance(signal))));
-    }
-
-    public void getRMS(double[] signal) {
-        features.add(new Feature("RMS", Math.sqrt(StatUtils.sumSq(signal)/signal.length)));
-    }
-
 
 private void linearPhaseDetect(double[] ecg, int flag){
+        //ecg = medFilt1(ecg, 20);
         int max_i = 0;
         int min_i = 0;
         double max = ecg[0];
@@ -156,15 +147,15 @@ private void linearPhaseDetect(double[] ecg, int flag){
             slope = 0;
         }
         if(slope > 1.1 && length > 12 && max > 80 && (max-ecg[1])> 15){
-	    if (flag ==1){
-		features.add(new Feature("Max LinPhase", max));
-	    }else if (flag == 2){
-		features.add(new Feature("Length LinPhase", length));
-	    }else if (flag == 3){
-		features.add(new Feature("RelativeMaxLinPhase", max/ecg[0]));
-	    }else{
-		features.add(new Feature("isLinPhase", 0));
-	    }
+	        if (flag ==1){
+		        features.add(new Feature("Max LinPhase", max));
+	        }else if (flag == 2){
+		        features.add(new Feature("Length LinPhase", length));
+	        }else if (flag == 3){
+		        features.add(new Feature("RelativeMaxLinPhase", max/ecg[0]));
+	        }else{
+		        features.add(new Feature("isLinPhase", 0));
+	        }
         }else features.add(new Feature("isLinPhase", 0));
     }
 
@@ -180,22 +171,12 @@ private void linearPhaseDetect(double[] ecg, int flag){
         features.add(new Feature("pnn50", pNN50));
     }
 
-    public void getActivity(double[] hrvSig){
-        features.add(new Feature("Activity", StatUtils.variance(hrvSig)));
-    }
-
 
     private void getMobility(double[] hrvSig){
         double[] diffsig = diff(hrvSig);
         features.add(new Feature("Mobility", Math.sqrt(StatUtils.variance(diffsig)/StatUtils.variance(hrvSig))));
     }
 
-    public void complexity(double[] hrvsig){
-        double [] diffsig = diff(hrvsig);
-        double[] diffdiffsig = diff(diffsig);
-        double com = Math.sqrt(StatUtils.variance(diffdiffsig)/StatUtils.variance(diffsig))/Math.sqrt(StatUtils.variance(diffsig)/StatUtils.variance(hrvsig));
-        features.add(new Feature("Complexity", com));
-    }
 
     // Helper Functions
 
@@ -211,6 +192,21 @@ private void linearPhaseDetect(double[] ecg, int flag){
         double[] y = new double[hrvsig.length-1];
         for(int i = 0; i < y.length-1; i++) {
             y[i] = hrvsig[i+1] - hrvsig[i];
+        }
+        return y;
+    }
+
+    private double[] medFilt1(double[] x, int k){
+        int k2 = (k-1)/2;
+        double[] y = new double[x.length];
+        for (int i = 0; i<y.length; i++){
+            if (i<k2){
+                y[i] = x[i];
+            } else if(i>y.length-1-k2){
+                y[i] = x[i];
+            } else{
+                y[i] = ArrayMath.median(ArrayUtils.subarray(x, i-k2, 20));
+            }
         }
         return y;
     }

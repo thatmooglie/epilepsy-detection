@@ -110,7 +110,7 @@ public class QRSDetector extends FeatureExtractor {
                 if (i==0){
                     yi = StatUtils.max(ecgF, i, peakLocs[i]);
                     xi = argmax(ecgF, i, peakLocs[i]);
-                    searchBack = true;
+                    searchBack = false;
                 }
                 else if (peakLocs[i]>=ecgF.length){
                     yi = StatUtils.max(ecgF, (int) (peakLocs[i]-Math.round(0.150*fs)), (int) Math.round(0.150*fs));

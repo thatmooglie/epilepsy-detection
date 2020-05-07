@@ -14,7 +14,7 @@ function [R_ind_post_processing,QRS_on_post_processing,QRS_off_post_processing,R
 %QRS_off_post_processing = position of the QRS offset
 %RR = RR intervals
 %ecg_out = ECG signal that is resized for calculating the SWT
-% ? Matteo Cesari, 2016
+% Original Code: Matteo Cesari, 2016, Edited by: Bragi Marin?sson
 
 %--INITIALIZATION OF THE VARIABLES-----------------------------------------
 R_ind = [];

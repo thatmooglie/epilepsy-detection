@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">Seizure The Day</string>
-    <string name="heart_rate">Heart Rate:</string>
+    <string name="heart_rate">Heart Rate</string>
     <string name="bpm">BPM</string>
+    <string name="date">Date:</string>
+    <string name="add_change_emergency_contact">Add/Change Emergency Contact</string>
 </resources>
