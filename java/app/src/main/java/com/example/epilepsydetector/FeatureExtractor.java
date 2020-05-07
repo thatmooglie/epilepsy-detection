@@ -121,7 +121,7 @@ public class FeatureExtractor {
 
 
 private void linearPhaseDetect(double[] ecg, int flag){
-        //ecg = medFilt1(ecg, 20);
+        ecg = medFilt1(ecg, 10);
         int max_i = 0;
         int min_i = 0;
         double max = ecg[0];
