@@ -21,6 +21,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -86,10 +87,13 @@ public class MainActivity extends AppCompatActivity {
     LineGraphSeries<DataPoint> series = new LineGraphSeries<>();
     int hr = 0;
     final static int winSize = 200 * 16;
+    boolean hasEmergencyContact = false;
     String initTime;
 
     GraphView graph;
     TextView heartRate;
+    Button contact;
+
 
 
     @Override
@@ -106,6 +110,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         // data
+        contact = findViewById(R.id.emergencyButton);
         series = new LineGraphSeries<>();
         graph.addSeries(series);
         // customize a little bit viewport
@@ -159,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
+        contact.performClick();
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -345,7 +350,12 @@ public class MainActivity extends AppCompatActivity {
     public void changeEmergencyContact(View view) {
 
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
-        alert.setTitle("Change Emergency Contact");
+        if(hasEmergencyContact){
+            alert.setTitle("Change Emergency Contact");
+        }
+        else {
+            alert.setTitle("Add Emergency Contact");
+        }
         EditText phoneInput = new EditText(this);
         LinearLayout.LayoutParams lp = new LinearLayout
                 .LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
@@ -357,10 +367,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if(phoneInput.getText().toString().length()!= 8){
-                    Toast.makeText(getApplicationContext(), "Must be a valid phonenumber", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "Must be a valid Phone Number", Toast.LENGTH_SHORT).show();
+                    contact.performClick();
                 }else{
                     emergencyNr = phoneInput.getText().toString();
                     Toast.makeText(getApplicationContext(), emergencyNr + " saved as emergency contact", Toast.LENGTH_SHORT).show();
+                    hasEmergencyContact = true;
                 }
 
             }
