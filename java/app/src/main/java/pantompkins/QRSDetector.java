@@ -141,6 +141,7 @@ public class QRSDetector extends FeatureExtractor {
                 tempM = 0;
             }
 
+            // This part needs more debugging in order to be usable.
             if(false){//tempM!=0){ false
                 if (peakLocs[i] - qrsI.get(qrsI.size()-1) >= Math.round(1.66*tempM)) {
                     int start = (int) (qrsI.get(qrsI.size()-1)+Math.round(0.2*fs));
