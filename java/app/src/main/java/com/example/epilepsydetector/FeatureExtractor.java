@@ -61,17 +61,10 @@ public class FeatureExtractor {
         return featureNames;
     }
 
-    public void addFeature(Feature feature){
+    private void addFeature(Feature feature){
         this.features.add(feature);
     }
 
-    public double[] extractHR(double[] hrvSignal){
-        double[] hrSig = new double[Math.floorDiv(hrvSignal.length, 8)];
-        for(int i=0; i<hrvSignal.length/8; i++){
-            hrSig[i] = 60/(hrvSignal[i*8]/200);
-        }
-        return hrSig;
-    }
 
     // Feature extraction functions
 
@@ -80,14 +73,14 @@ public class FeatureExtractor {
         double [] hrSig = extractHR(hrvSig);
         getMobility(hrvSig);    // name of the function that calculates the mobility
         getPNN50(hrvSig);
-        linearPhaseDetect(hrSig, 1);
+        linPhaseDetect(hrSig, 1);
         if(features.get(2).getValue()==0) {
             Log.d(LOG_TAG, "No Linear Phase found");
             return null;
         }
         else{
-            linearPhaseDetect(hrSig, 2);
-            linearPhaseDetect(hrSig, 3);
+            linPhaseDetect(hrSig, 2);
+            linPhaseDetect(hrSig, 3);
             return normalize(this.getFeatureValues());
         }
     }
@@ -120,20 +113,29 @@ public class FeatureExtractor {
     }
 
 
-private void linearPhaseDetect(double[] ecg, int flag){
-        ecg = medFilt1(ecg, 10);
+    public double[] extractHR(double[] hrvSignal){
+        double[] hrSig = new double[Math.floorDiv(hrvSignal.length, 8)];
+        for(int i=0; i<hrvSignal.length/8; i++){
+            hrSig[i] = 60/(hrvSignal[i*8]/200);
+        }
+        return hrSig;
+    }
+
+
+    private void linPhaseDetect(double[] hrSig, int flag){
+        hrSig = medFilt1(hrSig, 10);
         int max_i = 0;
         int min_i = 0;
-        double max = ecg[0];
-        double min = ecg[1];
+        double max = hrSig[0];
+        double min = hrSig[1];
 
         // this finds the max and min value
-        for(int i = 1; i < ecg.length; i++){
-            if(ecg[i] > max) {
-                max = ecg[i];
+        for(int i = 1; i < hrSig.length; i++){
+            if(hrSig[i] > max) {
+                max = hrSig[i];
                 max_i = i;
-            } if(ecg[i] < min){
-                min = ecg[i];
+            } if(hrSig[i] < min){
+                min = hrSig[i];
                 min_i = i;
             }
         }
@@ -146,28 +148,28 @@ private void linearPhaseDetect(double[] ecg, int flag){
         }else{
             slope = 0;
         }
-        if(slope > 1.1 && length > 12 && max > 80 && (max-ecg[1])> 15){
+        if(slope > 1.1 && length > 12 && max > 80 && (max-hrSig[1])> 15){
 	        if (flag ==1){
 		        features.add(new Feature("Max LinPhase", max));
 	        }else if (flag == 2){
 		        features.add(new Feature("Length LinPhase", length));
 	        }else if (flag == 3){
-		        features.add(new Feature("RelativeMaxLinPhase", max/ecg[0]));
+		        features.add(new Feature("RelativeMaxLinPhase", max/hrSig[0]));
 	        }else{
 		        features.add(new Feature("isLinPhase", 0));
 	        }
         }else features.add(new Feature("isLinPhase", 0));
     }
 
-    private void getPNN50(double[] hrvsig){
+    private void getPNN50(double[] hrvSig){
         double counter = 0;
 
-        for(int i=0; i<hrvsig.length-1; i++) {
-            if(Math.abs(hrvsig[i+1]-hrvsig[i]) > 0.05){
+        for(int i=0; i<hrvSig.length-1; i++) {
+            if(Math.abs(hrvSig[i+1]-hrvSig[i]) > 0.05){
                 counter = counter + 1;
             }
         }
-        double pNN50 = (counter/hrvsig.length)*100;
+        double pNN50 = (counter/hrvSig.length)*100;
         features.add(new Feature("pnn50", pNN50));
     }
 
@@ -188,10 +190,10 @@ private void linearPhaseDetect(double[] ecg, int flag){
         return normfeatures;
     }
 
-    private static double[] diff(double[] hrvsig){
-        double[] y = new double[hrvsig.length-1];
+    private static double[] diff(double[] sig){
+        double[] y = new double[sig.length-1];
         for(int i = 0; i < y.length-1; i++) {
-            y[i] = hrvsig[i+1] - hrvsig[i];
+            y[i] = sig[i+1] - sig[i];
         }
         return y;
     }

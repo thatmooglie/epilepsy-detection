@@ -19,7 +19,7 @@ public class QRSDetector extends FeatureExtractor {
 
     public Peaks rLocations;
     private double [] ecgData;
-    final int fs = 200;
+    public final int fs = 200;
     private double [] peaks;
     private int[] indices;
 
@@ -138,10 +138,10 @@ public class QRSDetector extends FeatureExtractor {
                 tempM = meanRR;
             }
             else{
-                //tempM = 0;
+                tempM = 0;
             }
 
-            if(false){//tempM!=0){
+            if(false){//tempM!=0){ false
                 if (peakLocs[i] - qrsI.get(qrsI.size()-1) >= Math.round(1.66*tempM)) {
                     int start = (int) (qrsI.get(qrsI.size()-1)+Math.round(0.2*fs));
                     int end = (int)(peakLocs[i]-Math.round(0.2*fs));
@@ -185,9 +185,9 @@ public class QRSDetector extends FeatureExtractor {
 
                         notNoise = true;
                         SPKI = 0.25 * peakTemp + 0.75 * SPKI;
-                    }} else {
-                        notNoise = false;
-                    }}
+                    }
+                }
+            }
 
 
             // Find noise and QRS peaks
@@ -277,10 +277,6 @@ public class QRSDetector extends FeatureExtractor {
             idx[j] = tmpIdx.get(j);
         }
 
-        double[] diff = new double[pks.length-1];
-        for (int j=0; j<pks.length-1; j++){
-            diff[j] = idx[j+1]-idx[j];
-        }
         this.peaks = pks;
         this.indices = idx;
         System.gc();
@@ -312,7 +308,7 @@ public class QRSDetector extends FeatureExtractor {
     }
 
     private void setThresholds(double[]ecgM, double [] ecgF){
-        calculateThresholds(ecgF);
+        calculateThresholds(ecgM);
         calculateBPThresholds(ecgF);
     }
 

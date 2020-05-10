@@ -162,10 +162,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        contact.performClick();
-        new Thread(new Runnable() {
+    protected void onStart() {
+        super.onStart();
+        if(emergencyNr==null) {
+            contact.performClick();
+        }
+        ScheduledExecutorService dataAq = Executors.newSingleThreadScheduledExecutor();
+        dataAq.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
                 String recString = "";
@@ -177,12 +180,9 @@ public class MainActivity extends AppCompatActivity {
                     }
                     ecgSignal.add(Double.parseDouble(recString));
                     timeECG.add((ecgSignal.size() - 1) / 200.0);
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            addEntry();
-                            updateHR(hr);
-                        }
+                    runOnUiThread(() -> {
+                        addEntry();
+                        updateHR(hr);
                     });
                     try {
                         Thread.sleep(5);
@@ -191,7 +191,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             }
-        }).start();
+        }, 0, 5, TimeUnit.MILLISECONDS);
 
         ScheduledExecutorService hrServ = Executors.newSingleThreadScheduledExecutor();
         hrServ.scheduleAtFixedRate(new Runnable() {
@@ -203,7 +203,7 @@ public class MainActivity extends AppCompatActivity {
                     Log.w("HeartRateCalc", e);
                 }
             }
-        }, 15000, (long) 500, TimeUnit.MILLISECONDS);
+        }, 15000, 500, TimeUnit.MILLISECONDS);
 
 
         ScheduledExecutorService ser = Executors.newSingleThreadScheduledExecutor();
