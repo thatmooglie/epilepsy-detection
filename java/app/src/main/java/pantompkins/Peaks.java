@@ -2,6 +2,10 @@ package pantompkins;
 
 import java.util.ArrayList;
 import java.util.List;
+/*
+    Utility class implementing in finding peaks of a signal using zero-crossing of
+    differentiated signal
+ */
 
 public class Peaks extends QRSDetector{
 
@@ -9,18 +13,17 @@ public class Peaks extends QRSDetector{
     private double[] amplitudes;
     private static final int fs = 200;
 
-    public Peaks(){
+    Peaks(){}
 
-    }
-
-    public Peaks(int[] locations, double[] amplitudes){
+    private Peaks(int[] locations, double[] amplitudes){
+        super();
         this.locations = locations;
         this.amplitudes = amplitudes;
     }
 
-    public int[] getLocations(){ return locations; }
+    int[] getLocations(){ return locations; }
 
-    public double[] getAmplitudes(){
+    double[] getAmplitudes(){
         return amplitudes;
     }
 
@@ -32,7 +35,8 @@ public class Peaks extends QRSDetector{
         this.amplitudes = amplitudes;
     }
 
-    public Peaks findPeaks(double[] ecg){
+
+    Peaks findPeaks(double[] ecg){
         List<Integer> zeroCrossings = findZeroCrossings(ecg);
         int[] locs = new int[zeroCrossings.size()];
         double[] peaks = new double[zeroCrossings.size()];
@@ -43,6 +47,7 @@ public class Peaks extends QRSDetector{
 
         return new Peaks(locs, peaks);
     }
+
 
     private List<Integer> findZeroCrossings(double[] ecg){
         double[] ecgDiff = new double[ecg.length-1];
@@ -57,5 +62,4 @@ public class Peaks extends QRSDetector{
         }
         return zeroCrossings;
     }
-
 }

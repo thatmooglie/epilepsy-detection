@@ -15,11 +15,14 @@ import java.util.List;
 
 import edu.stanford.nlp.math.ArrayMath;
 
+/*
+    Object class implementing the Pan-Tompkins QRS detection
+ */
+
 public class QRSDetector extends FeatureExtractor {
 
-    public Peaks rLocations;
     private double [] ecgData;
-    public final int fs = 200;
+    private final int fs = 200;
     private double [] peaks;
     private int[] indices;
 
@@ -33,8 +36,7 @@ public class QRSDetector extends FeatureExtractor {
         this.ecgData = ecg;
     }
 
-    public QRSDetector() {
-    }
+    public QRSDetector() {}
 
     public double[] getEcgData() {
         return ecgData;
@@ -67,7 +69,6 @@ public class QRSDetector extends FeatureExtractor {
     }
 
 
-
     public void detect(){
         // Initialize variables
         double[] ecgF = Filter.highPassFilter(Filter.lowPassFilter(ecgData));
@@ -95,7 +96,7 @@ public class QRSDetector extends FeatureExtractor {
         boolean searchBack=false;
 
         setThresholds(ecgM, ecgF);
-        rLocations = new Peaks();
+        Peaks rLocations = new Peaks();
         rLocations = rLocations.findPeaks(ecgM);
         int[] peakLocs = rLocations.getLocations();
         double[] peakVal = rLocations.getAmplitudes();
@@ -104,7 +105,8 @@ public class QRSDetector extends FeatureExtractor {
         for (int i=0; i<peakLocs.length; i++){
             // Locate the corresponding peak in filtered signal
             if(peakLocs[i]-Math.round(0.150*fs) >= 0 && peakLocs[i]<ecgF.length){
-                yi = StatUtils.max(ecgF, (int) (peakLocs[i]-Math.round(0.150*fs)), (int) Math.round(0.150*fs));
+                yi = StatUtils.max(ecgF, (int) (peakLocs[i]-Math.round(0.150*fs)),
+                        (int) Math.round(0.150*fs));
                 xi = argmax(ecgF, (int)(peakLocs[i]-Math.round(0.150*fs)), peakLocs[i]);
             } else{
                 if (i==0){
@@ -113,8 +115,10 @@ public class QRSDetector extends FeatureExtractor {
                     searchBack = false;
                 }
                 else if (peakLocs[i]>=ecgF.length){
-                    yi = StatUtils.max(ecgF, (int) (peakLocs[i]-Math.round(0.150*fs)), (int) Math.round(0.150*fs));
-                    xi = argmax(ecgF, (int) (peakLocs[i]-Math.round(0.150*fs)), ecgF.length-1);
+                    yi = StatUtils.max(ecgF, (int) (peakLocs[i]-Math.round(0.150*fs)),
+                            (int) Math.round(0.150*fs));
+                    xi = argmax(ecgF, (int) (peakLocs[i]-Math.round(0.150*fs)),
+                            ecgF.length-1);
                 }
             }
             // Update HR
@@ -140,7 +144,6 @@ public class QRSDetector extends FeatureExtractor {
             else{
                 tempM = 0;
             }
-
             // This part needs more debugging in order to be usable.
             if(false){//tempM!=0){ false
                 if (peakLocs[i] - qrsI.get(qrsI.size()-1) >= Math.round(1.66*tempM)) {
@@ -153,11 +156,14 @@ public class QRSDetector extends FeatureExtractor {
                     else if(end>ecgM.length-1)
                         end = ecgM.length-1;
                     double peakTemp = 0;
-                    peakTemp = StatUtils.max(ecgM, (int) (qrsI.get(qrsI.size() - 1) + Math.round(0.2 * fs)), Math.abs(end-start));
+                    peakTemp = StatUtils.max(ecgM, (int) (qrsI.get(qrsI.size() - 1) +
+                            Math.round(0.2 * fs)), Math.abs(end-start));
 
 
-                    int locTemp = argmax(ecgM, (int) (qrsI.get(qrsI.size() - 1) + Math.round(0.2 * fs)), (int) (peakLocs[i]-Math.round(0.2*fs))-1);
-                    locTemp = (int) (qrsI.get(qrsI.size() - 1) + Math.round(0.2 * fs) + locTemp - 2);
+                    int locTemp = argmax(ecgM, (int) (qrsI.get(qrsI.size() - 1) +
+                            Math.round(0.2 * fs)), (int) (peakLocs[i]-Math.round(0.2*fs))-1);
+                    locTemp = (int) (qrsI.get(qrsI.size() - 1) + Math.round(0.2 * fs) +
+                            locTemp - 2);
 
                     if (peakTemp > thresholdI2) {
                         qrsC.add(peakTemp);
@@ -165,17 +171,19 @@ public class QRSDetector extends FeatureExtractor {
                         
                         // Find bandpass signal location
                         if (locTemp <= ecgF.length) {
-                            yIt = StatUtils.max(ecgF, (int) (locTemp - Math.round(0.15 * fs)), (int) Math.round(0.150*fs));
+                            yIt = StatUtils.max(ecgF, (int) (locTemp - Math.round(0.15 * fs)),
+                                    (int) Math.round(0.150*fs));
                             xIt = argmax(ecgF, (int) (locTemp - Math.round(0.15 * fs)), locTemp);
                         } else{
                             try{
-                                yIt = StatUtils.max(ecgF, (int) (locTemp - Math.round(0.15 * fs)), (int) ((ecgF.length - 1)-(locTemp-Math.round(0.15*fs))));
-                                xIt = argmax(ecgF, (int) (locTemp - Math.round(0.15 * fs)), ecgF.length - 1);
+                                yIt = StatUtils.max(ecgF, (int) (locTemp - Math.round(0.15 * fs)),
+                                        (int) ((ecgF.length - 1)-(locTemp-Math.round(0.15*fs))));
+                                xIt = argmax(ecgF, (int) (locTemp - Math.round(0.15 * fs)),
+                                        ecgF.length - 1);
                             }catch(NotPositiveException e){
                                 yIt = ecgF[ecgF.length-1];
                                 xIt = ecgF.length-1;
                             }
-
                         }
                         // Take care of the threshold
                         if (yIt > thresholdF2) {
@@ -183,13 +191,11 @@ public class QRSDetector extends FeatureExtractor {
                             qrsCRaw.add(yIt);
                             SPKF = 0.25 * yIt + 0.75 * SPKF;
                         }
-
                         notNoise = true;
                         SPKI = 0.25 * peakTemp + 0.75 * SPKI;
                     }
                 }
             }
-
 
             // Find noise and QRS peaks
             if (peakVal[i] >= thresholdI1){
@@ -198,13 +204,18 @@ public class QRSDetector extends FeatureExtractor {
                 if (qrsC.size() >= 3){
                     if(peakLocs[i]-qrsI.get(qrsI.size()-1) <= Math.round(0.36*fs)){
                         double slope1 = StatUtils.mean(MathArrays.ebeSubtract(
-                                ArrayUtils.subarray(ecgM, (int) (peakLocs[i]-Math.round(0.075*fs))+1, peakLocs[i]),
-                                ArrayUtils.subarray(ecgM, (int) (peakLocs[i]-Math.round(0.075*fs)), peakLocs[i]-1)));
+                                ArrayUtils.subarray(ecgM, (int)
+                                        (peakLocs[i]-Math.round(0.075*fs))+1, peakLocs[i]),
+                                ArrayUtils.subarray(ecgM, (int) (peakLocs[i]-Math.round(0.075*fs)),
+                                        peakLocs[i]-1)));
                         double slope2 = 0;
                         try{
                             slope2 = StatUtils.mean(MathArrays.ebeSubtract(
-                                    ArrayUtils.subarray(ecgM, (int) (qrsI.get(qrsC.size()-1)-Math.round(0.075*fs))+1, qrsI.get(qrsC.size()-1)+1),
-                                    ArrayUtils.subarray(ecgM, (int) (qrsI.get(qrsC.size()-1)-Math.round(0.075*fs)), qrsI.get(qrsC.size()-1))));
+                                    ArrayUtils.subarray(ecgM, (int)
+                                            (qrsI.get(qrsC.size()-1)-Math.round(0.075*fs))+1,
+                                            qrsI.get(qrsC.size()-1)+1),
+                                    ArrayUtils.subarray(ecgM, (int) (qrsI.get(qrsC.size()-1)-
+                                            Math.round(0.075*fs)), qrsI.get(qrsC.size()-1))));
                         } catch (DimensionMismatchException e) {
                             Log.w("QRS", e);
                         }

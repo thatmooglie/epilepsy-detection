@@ -18,9 +18,9 @@ testData = val;
 x = filter(b,a,-testData);
 [b,a] = butter(9, 5/100, 'high');
 xx = filter(b,a,x);
-plot(xx)
+plot(xx)840000
 %%
-testData = val(810000:840000);
+testData = val(810000:);
 fileID = fopen('testData.txt', 'w')
 for i=1:length(testData)
     fprintf(fileID, '%f\n', -testData(i));

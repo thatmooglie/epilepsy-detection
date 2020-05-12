@@ -1,23 +1,23 @@
 package com.example.epilepsydetector;
 
-
 import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 import org.apache.commons.math3.exception.NonMonotonicSequenceException;
 import org.apache.commons.math3.stat.StatUtils;
-import org.apache.commons.math3.stat.descriptive.rank.Median;
-
-import java.util.stream.IntStream;
 import org.apache.commons.math3.analysis.interpolation.LinearInterpolator;
-import org.apache.commons.math3.util.MathArrays;
 
 import edu.stanford.nlp.math.ArrayMath;
 import pantompkins.QRSDetector;
+
+/*
+    Utility class implementing the feature extraction on the ECG data
+ */
 
 public class FeatureExtractor {
     private static final String LOG_TAG = "Feature Extractor";
@@ -41,17 +41,20 @@ public class FeatureExtractor {
         this.features = features;
     }
 
+
     public List<Feature> getFeatures(){
         return this.features;
     }
 
-    public double[] getFeatureValues(){
+
+    private double[] getFeatureValues(){
         double[] featureValues = new double [this.features.size()];
         for(int i=0; i<this.features.size();i++){
             featureValues[i] = features.get(i).getValue();
         }
         return featureValues;
     }
+
 
     public String[] getFeatureNames(){
         String [] featureNames = new String[this.features.size()];
@@ -61,17 +64,13 @@ public class FeatureExtractor {
         return featureNames;
     }
 
-    private void addFeature(Feature feature){
-        this.features.add(feature);
-    }
-
 
     // Feature extraction functions
 
-    public double[] extract() {
+    double[] extract() {
         double [] hrvSig = extractHRV();
         double [] hrSig = extractHR(hrvSig);
-        getMobility(hrvSig);    // name of the function that calculates the mobility
+        getMobility(hrvSig);
         getPNN50(hrvSig);
         linPhaseDetect(hrSig, 1);
         if(features.get(2).getValue()==0) {
@@ -85,7 +84,7 @@ public class FeatureExtractor {
         }
     }
 
-    public double[] extractHRV(){
+    double[] extractHRV(){
         QRSDetector qrsDetector = new QRSDetector(ecg);
         qrsDetector.detect();
         int[] rSignal = qrsDetector.getIndices();
@@ -97,7 +96,8 @@ public class FeatureExtractor {
             rrIndices[i] = rSignal[i];
             rrDIndices[i] = rSignal[i];
         }
-        int [] newX = IntStream.range(rrIndices[0], rrIndices[rrIndices.length-1]).filter(i -> i%25==0).toArray();
+        int [] newX = IntStream.range(rrIndices[0], rrIndices[rrIndices.length-1])
+                .filter(i -> i%25==0).toArray();
         LinearInterpolator linIntp = new LinearInterpolator();
         PolynomialSplineFunction rr = null;
         try {
@@ -113,7 +113,7 @@ public class FeatureExtractor {
     }
 
 
-    public double[] extractHR(double[] hrvSignal){
+    private double[] extractHR(double[] hrvSignal){
         double[] hrSig = new double[Math.floorDiv(hrvSignal.length, 8)];
         for(int i=0; i<hrvSignal.length/8; i++){
             hrSig[i] = 60/(hrvSignal[i*8]/200);
@@ -161,6 +161,7 @@ public class FeatureExtractor {
         }else features.add(new Feature("isLinPhase", 0));
     }
 
+
     private void getPNN50(double[] hrvSig){
         double counter = 0;
 
@@ -207,11 +208,13 @@ public class FeatureExtractor {
             } else if(i>y.length-1-k2){
                 y[i] = x[i];
             } else{
-                y[i] = ArrayMath.median(ArrayUtils.subarray(x, i-k2, 20));
+                y[i] = ArrayMath.median(ArrayUtils.subarray(x,
+                        i-k2, 20));
             }
         }
         return y;
     }
+
 
     private double[] meanfilt(double[] hrsig){
         double[] filtersig = new double[hrsig.length-1];
@@ -221,6 +224,4 @@ public class FeatureExtractor {
         }
         return filtersig;
     }
-
 }
-

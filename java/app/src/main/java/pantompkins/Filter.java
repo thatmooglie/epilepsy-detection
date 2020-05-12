@@ -3,12 +3,12 @@ package pantompkins;
 import org.apache.commons.math3.util.MathArrays;
 import org.apache.commons.math3.stat.StatUtils;
 
-import static org.apache.commons.math3.util.MathArrays.convolve;
-
+/*
+    Utility class to filter ECG signal using the filter coefficients from Pan-Tompkins
+ */
 public class Filter extends QRSDetector{
 
     private static final String TAG = "Pan-Tompkins Filter";
-
 
     private static final double[] lpH = {1, 2, 3 ,4 ,5 ,6 ,5, 4, 3, 2, 1 ,0 ,0};
     private static final double[] hpH = {-1, -1, -1, -1 , -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -21,7 +21,7 @@ public class Filter extends QRSDetector{
     }
 
 
-    public static double[] filterECG(double[] ecg){
+    static double[] filterECG(double[] ecg){
         double[] ecgL = lowPassFilter(ecg);
         double[] ecgH = highPassFilter(ecgL);
         double[] ecgD = derivativeFilter(ecgH);
@@ -57,17 +57,17 @@ public class Filter extends QRSDetector{
         return MathArrays.scale(1/Math.abs(maxECG), hpECG);
     }
 
-    public static double[] derivativeFilter(double[] ecg){
+    private static double[] derivativeFilter(double[] ecg){
         double[] result = MathArrays.convolve(ecg, dH);
         double maxValue = StatUtils.max(result);
         return MathArrays.scale(1/maxValue, result);
     }
 
-    public static double[] squareFilter(double[] ecg){
+    private static double[] squareFilter(double[] ecg){
         return MathArrays.ebeMultiply(ecg, ecg);
     }
 
-    public static double[] movingAverage(double[] ecg){
+    private static double[] movingAverage(double[] ecg){
         int fs = 200;
         double[] maH = new double[(int) Math.round(0.150* fs)];
         for (int i = 0; i<(int)Math.round(0.150* fs); i++) {
@@ -75,9 +75,5 @@ public class Filter extends QRSDetector{
         }
         double[] result = MathArrays.convolve(ecg, maH);
         return result;
-
     }
-
-
 }
-

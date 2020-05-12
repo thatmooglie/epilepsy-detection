@@ -1,30 +1,23 @@
 package com.example.epilepsydetector;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
 import android.app.AlertDialog;
 import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.telephony.SmsManager;
 import android.text.InputType;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,13 +26,8 @@ import com.jjoe64.graphview.GridLabelRenderer;
 import com.jjoe64.graphview.Viewport;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
-import com.jjoe64.graphview.series.PointsGraphSeries;
 
-import org.apache.commons.math3.exception.ZeroException;
-import org.apache.commons.math3.geometry.euclidean.twod.Line;
 import org.apache.commons.math3.stat.StatUtils;
-import org.apache.commons.math3.util.MathArrays;
-import org.xmlpull.v1.XmlPullParser;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -49,12 +37,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
-import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -62,25 +47,17 @@ import java.util.concurrent.TimeUnit;
 import pantompkins.Filter;
 import pantompkins.QRSDetector;
 
+/*
+    Activity which reads and displays the data to UI and performs threaded calculations of
+    heart rate and classification
+ */
 
 public class MainActivity extends AppCompatActivity {
-
-    String binFile = "testData.bin";
-    String txtFile = "testData.txt";
-
-    private Context mContext;
-    static String LOG_TAG = "jeje";
+    static String LOG_TAG = "MainActivity";
     private String emergencyNr;
 
-    private File externalStorage;
-    private File path;
-    private File file;
-    private FileInputStream fIn;
-    private InputStreamReader isr;
     private BufferedReader bufferedReader;
-
     private NotificationManagerCompat notificationManager;
-    private LayoutInflater inflater;
 
     public List<Double> ecgSignal = Collections.synchronizedList(new ArrayList<>());
     public List<Double> timeECG = Collections.synchronizedList(new ArrayList<>());
@@ -93,7 +70,6 @@ public class MainActivity extends AppCompatActivity {
     GraphView graph;
     TextView heartRate;
     Button contact;
-
 
 
     @Override
@@ -113,7 +89,8 @@ public class MainActivity extends AppCompatActivity {
         contact = findViewById(R.id.emergencyButton);
         series = new LineGraphSeries<>();
         graph.addSeries(series);
-        // customize a little bit viewport
+
+        // customize ECG plot field
         Viewport viewport = graph.getViewport();
         viewport.setYAxisBoundsManual(true);
         viewport.setXAxisBoundsManual(true);
@@ -129,10 +106,11 @@ public class MainActivity extends AppCompatActivity {
         viewport.setBorderColor(Color.TRANSPARENT);
         series.setColor(R.color.colorPrimary);
         series.setThickness(5);
-        inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-        externalStorage = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-        path = new File(externalStorage.getAbsolutePath());
+        // Get path to txt file
+        File externalStorage = Environment
+                .getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        File path = new File(externalStorage.getAbsolutePath());
 
         Log.d(LOG_TAG, path.getAbsolutePath());
 
@@ -147,52 +125,52 @@ public class MainActivity extends AppCompatActivity {
             Log.d(LOG_TAG, "Directory does exist");
         }
 
-        fIn = null;
-        file = new File(path, txtFile);
+        FileInputStream fIn = null;
+        String txtFile = "testData.txt";
+        File file = new File(path, txtFile);
         try {
             fIn = new FileInputStream(file);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        isr = new InputStreamReader(fIn);
+        assert fIn != null;
+        InputStreamReader isr = new InputStreamReader(fIn);
         bufferedReader = new BufferedReader(isr);
-        //readFile();
-
 
     }
+
 
     @Override
     protected void onStart() {
         super.onStart();
-        if(emergencyNr==null) {
+        if (emergencyNr == null) {
             contact.performClick();
         }
+        // Initialize and start thread for data acquisition and displaying data on UI
         ScheduledExecutorService dataAq = Executors.newSingleThreadScheduledExecutor();
-        dataAq.scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-                String recString = "";
-                while (true) {
-                    try {
-                        if ((recString = bufferedReader.readLine()) == null) break;
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    ecgSignal.add(Double.parseDouble(recString));
-                    timeECG.add((ecgSignal.size() - 1) / 200.0);
-                    runOnUiThread(() -> {
-                        addEntry();
-                        updateHR(hr);
-                    });
-                    try {
-                        Thread.sleep(5);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+        dataAq.scheduleAtFixedRate(() -> {
+            String recString = "";
+            while (true) {
+                try {
+                    if ((recString = bufferedReader.readLine()) == null) break;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                ecgSignal.add(Double.parseDouble(recString));
+                timeECG.add((ecgSignal.size() - 1) / 200.0);
+                runOnUiThread(() -> {
+                    addEntry();
+                    updateHR(hr);
+                });
+                try {
+                    Thread.sleep(5);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
             }
         }, 0, 5, TimeUnit.MILLISECONDS);
 
+        // Initialize and start heart rate calculation thread
         ScheduledExecutorService hrServ = Executors.newSingleThreadScheduledExecutor();
         hrServ.scheduleAtFixedRate(new Runnable() {
             @Override
@@ -205,41 +183,38 @@ public class MainActivity extends AppCompatActivity {
             }
         }, 15000, 500, TimeUnit.MILLISECONDS);
 
-
+        // Initalize and start classification thread
         ScheduledExecutorService ser = Executors.newSingleThreadScheduledExecutor();
         ser.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
                 boolean seizure = classify();
-                String time = new SimpleDateFormat("DD/MM hh:mm:ss").format(Calendar.getInstance().getTime());
-                if(seizure){
+                String time = new SimpleDateFormat("DD/MM hh:mm:ss")
+                        .format(Calendar.getInstance().getTime());
+                if (seizure) {
                     try {
                         Log.d("Classifier", "Initial Time: " + initTime);
                         sendWarning();
                         //addSeizure(time);
-                        Thread.sleep(3*60*1000);
-
-
+                        Thread.sleep(3 * 60 * 1000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                 }
-            }},
-                20, 1, TimeUnit.SECONDS);
-
+            }
+        }, 20, 1, TimeUnit.SECONDS);
 
     }
 
+    // This method needs more work to function properly
     private void addSeizure(String time) {
         ViewGroup mainLL = findViewById(R.id.seizuresLL);
         TextView seizureDate = findViewById(R.id.time);
         seizureDate.setText(time);
         mainLL.addView(seizureDate);
         mainLL.invalidate();
-
-
-
     }
+
 
     private void sendWarning() throws InterruptedException {
         String content;
@@ -249,11 +224,11 @@ public class MainActivity extends AppCompatActivity {
         else{
             try {
                 SmsManager smgr = SmsManager.getDefault();
-                smgr.sendTextMessage("+45"+emergencyNr, null, "Possible Seizure Detected", null, null);
+                smgr.sendTextMessage("+45"+emergencyNr, null,
+                        "Possible Seizure Detected", null, null);
             } catch(Exception e){
                 Log.d("SMS", e.toString());
             }
-
             content = "An SMS has been sent to "+ emergencyNr;
         }
         Notification notification = new NotificationCompat.Builder(this, app.CHANNEL_ID)
@@ -261,12 +236,14 @@ public class MainActivity extends AppCompatActivity {
                 .setContentTitle("POSSIBLE SEIZURE DETECTED!")
                 .setContentText(content)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setStyle(new NotificationCompat.BigTextStyle().setBigContentTitle("POSSIBLE SEIZURE DETECTED!"))
+                .setStyle(new NotificationCompat.BigTextStyle()
+                        .setBigContentTitle("POSSIBLE SEIZURE DETECTED!"))
                 .setAutoCancel(false)
                 .build();
         notificationManager.notify(0, notification);
         //Thread.sleep(5*60*100);
     }
+
 
     private void calculateHeartRate() {
         List<Double> tmpData = ecgSignal;
@@ -286,6 +263,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
     private boolean classify(){
         try {
             List<Double> tmpData = ecgSignal;
@@ -293,7 +271,9 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("Classifier", "Not enough data");
             }
             else{
-                Log.d("Classifier", "Running Classification " + new SimpleDateFormat("mm:ss").format(Calendar.getInstance().getTime()));
+                Log.d("Classifier", "Running Classification "
+                        + new SimpleDateFormat("mm:ss")
+                        .format(Calendar.getInstance().getTime()));
                 double[] data = new double[winSize];
                 for (int i=0; i<=winSize-1 ; i++){
                     data[i] = tmpData.get(tmpData.size()-(winSize-i));
@@ -303,15 +283,14 @@ public class MainActivity extends AppCompatActivity {
                 if(classifier.seizure){
                     Log.d("Classifier", "Seizure Found" + tmpData.size());
                 }
-
                 return classifier.seizure;
-
             }
         }catch (Exception e) {
             Log.w("Classifier", e);
         }
         return false;
     }
+
 
     private void updateHR(int HR) {
         if (HR == 0 || HR > 180) {
@@ -320,6 +299,7 @@ public class MainActivity extends AppCompatActivity {
             heartRate.setText(String.valueOf(HR));
         }
     }
+
 
     private double[] filterPlotData(List<Double> tmpData) {
         int size = tmpData.size();
@@ -335,15 +315,15 @@ public class MainActivity extends AppCompatActivity {
                 data[i] = tmpData.get(size - (1000 - i));
             }
         }
-
-        //filteredECG = DoubleStream.of(filtData).boxed().collect(Collectors.toList());
         return Filter.highPassFilter(Filter.lowPassFilter(data));
     }
+
 
     private void addEntry() {
         List<Double> tmpData = ecgSignal;
         double[] filtData = filterPlotData(tmpData);
-        series.appendData(new DataPoint(timeECG.get(timeECG.size() - 1), filtData[filtData.length / 2]), true, 20000);
+        series.appendData(new DataPoint(timeECG.get(timeECG.size() - 1),
+                filtData[filtData.length / 2]), true, 20000);
     }
 
 
@@ -367,11 +347,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if(phoneInput.getText().toString().length()!= 8){
-                    Toast.makeText(getApplicationContext(), "Must be a valid Phone Number", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "Must be a valid Phone Number",
+                            Toast.LENGTH_SHORT).show();
                     contact.performClick();
                 }else{
                     emergencyNr = phoneInput.getText().toString();
-                    Toast.makeText(getApplicationContext(), emergencyNr + " saved as emergency contact", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), emergencyNr
+                            + " saved as emergency contact", Toast.LENGTH_SHORT).show();
                     hasEmergencyContact = true;
                 }
 
@@ -384,9 +366,5 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         alert.show();
-
     }
 }
-
-
-
